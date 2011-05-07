@@ -6,6 +6,12 @@ import "bitbucket.org/ww/marc21"
 An IO library for Go to read and write MARC21 bibliographic catalogue records.
 Written in 2011 by William Waites <ww@styx.org>.
 
+Usage is straightforward. For example,
+
+    marcfile, err := os.Open("somedata.mrc")
+    record, err := marc21.ReadRecord(marcfile)
+    err = record.XML(os.Stdout)
+
 
 CONSTANTS
 
@@ -96,4 +102,5 @@ func (sf SubField) String() string
 
 SUBDIRECTORIES
 
+	.hg
 	marc2xml
