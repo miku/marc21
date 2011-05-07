@@ -15,7 +15,7 @@ var gzoutput bool
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "\n%s\n\n", "Go MARC21 - XML Converter")
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags] infile.mrc outfile.xml[.gz]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [flags] infile.mrc [outfile.xml]\n\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n")
 	}
@@ -88,8 +88,8 @@ func marc2xml(reader io.Reader, writer io.Writer) (err os.Error) {
 		}
 	}()
 
-	_, err = writer.Write([]byte(`<?xml version="1.0" charset="utf-8" ?>
-<collection>\n`))
+	_, err = writer.Write([]byte(`<?xml version="1.0" encoding="utf-8" ?>
+<collection xmlns="http://www.loc.gov/MARC21/slim">\n`))
 	if err != nil {
 		return
 	}
