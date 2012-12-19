@@ -28,9 +28,9 @@ package marc21
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -74,7 +74,7 @@ func (leader Leader) String() string {
 	return string(leader.Bytes())
 }
 
-func read_leader(reader io.Reader) (leader *Leader, err os.Error) {
+func read_leader(reader io.Reader) (leader *Leader, err error) {
 	data := make([]byte, 24)
 	n, err := reader.Read(data)
 	if err != nil {
@@ -82,14 +82,14 @@ func read_leader(reader io.Reader) (leader *Leader, err os.Error) {
 	}
 	if n != 24 {
 		errs := fmt.Sprintf("MARC21: invalid leader: expected 24 bytes, read %d", n)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	leader = &Leader{}
 	leader.Length, err = strconv.Atoi(string(data[0:5]))
 	if err != nil {
 		errs := fmt.Sprintf("MARC21: invalid record length: %s", err)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	leader.Status = data[5]
@@ -100,13 +100,13 @@ func read_leader(reader io.Reader) (leader *Leader, err os.Error) {
 	leader.IndicatorCount, err = strconv.Atoi(string(data[10:11]))
 	if err != nil || leader.IndicatorCount != 2 {
 		errs := fmt.Sprintf("MARC21: erroneous indicator count, expecte '2', got %u", data[10])
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	leader.SubfieldCodeLength, err = strconv.Atoi(string(data[11:12]))
 	if err != nil || leader.SubfieldCodeLength != 2 {
 		errs := fmt.Sprintf("MARC21: erroneous subfield code length, expected '2', got %u", data[11])
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 
@@ -114,7 +114,7 @@ func read_leader(reader io.Reader) (leader *Leader, err os.Error) {
 
 	if err != nil {
 		errs := fmt.Sprintf("MARC21: invalid base address: %s", err)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 
@@ -123,13 +123,13 @@ func read_leader(reader io.Reader) (leader *Leader, err os.Error) {
 	leader.LengthOfLength, err = strconv.Atoi(string(data[20:21]))
 	if err != nil || leader.LengthOfLength != 4 {
 		errs := fmt.Sprintf("MARC21: invalid length of length, expected '4', got %u", data[20])
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	leader.LengthOfStartPos, err = strconv.Atoi(string(data[21:22]))
 	if err != nil || leader.LengthOfStartPos != 5 {
 		errs := fmt.Sprintf("MARC21: invalid length of starting character position, expected '5', got %u", data[21])
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	/*
@@ -157,9 +157,9 @@ const RT = 0x1D
 const RS = 0x1E
 const DELIM = 0x1F
 
-var ERS os.ErrorString = "Record Separator (field terminator)"
+var ERS = errors.New("Record Separator (field terminator)")
 
-func read_dirent(reader io.Reader) (dent *dirent, err os.Error) {
+func read_dirent(reader io.Reader) (dent *dirent, err error) {
 	data := make([]byte, 12)
 	_, err = reader.Read(data[0:1])
 	if err != nil {
@@ -175,7 +175,7 @@ func read_dirent(reader io.Reader) (dent *dirent, err os.Error) {
 	}
 	if n != 11 {
 		errs := fmt.Sprintf("MARC21: invalid directory entry, expected 12 bytes, got %d", n)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	dent = &dirent{}
@@ -206,7 +206,7 @@ func (cf *ControlField) GetTag() string {
 	return cf.Tag
 }
 
-func read_control(reader io.Reader, dent *dirent) (field Field, err os.Error) {
+func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
 	n, err := reader.Read(data)
 	if err != nil {
@@ -214,12 +214,12 @@ func read_control(reader io.Reader, dent *dirent) (field Field, err os.Error) {
 	}
 	if n != dent.length {
 		errs := fmt.Sprintf("MARC21: invalid control entry, expected %d bytes, read %d", dent.length, n)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	if data[dent.length-1] != RS {
 		errs := fmt.Sprintf("MARC21: invalid control entry, does not end with a field terminator")
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	field = &ControlField{dent.tag, string(data[:dent.length-1])}
@@ -256,7 +256,7 @@ func (df *DataField) String() string {
 		strings.Join(subfields, ", "))
 }
 
-func read_data(reader io.Reader, dent *dirent) (field Field, err os.Error) {
+func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
 	n, err := reader.Read(data)
 	if err != nil {
@@ -264,12 +264,12 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err os.Error) {
 	}
 	if n != dent.length {
 		errs := fmt.Sprintf("MARC21: invalid data entry, expected %d bytes, read %d", dent.length, n)
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 	if data[dent.length-1] != RS {
 		errs := fmt.Sprintf("MARC21: invalid data entry, does not end with a field terminator")
-		err = os.ErrorString(errs)
+		err = errors.New(errs)
 		return
 	}
 
@@ -277,7 +277,7 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err os.Error) {
 	df.Ind1, df.Ind2 = data[0], data[1]
 
 	df.SubFields = make([]*SubField, 0, 1)
-	for _, sfbytes := range bytes.Split(data[2:dent.length-1], []byte{DELIM}, -1) {
+	for _, sfbytes := range bytes.Split(data[2:dent.length-1], []byte{DELIM}) {
 		if len(sfbytes) == 0 {
 			continue
 		}
@@ -332,7 +332,7 @@ func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField)
 }
 
 // Read a single MARC record from a reader.
-func ReadRecord(reader io.Reader) (record *Record, err os.Error) {
+func ReadRecord(reader io.Reader) (record *Record, err error) {
 	record = &Record{}
 	record.Fields = make([]Field, 0, 8)
 
@@ -373,7 +373,7 @@ func ReadRecord(reader io.Reader) (record *Record, err os.Error) {
 		return
 	}
 	if rtbuf[0] != RT {
-		err = os.ErrorString("MARC21: could not read record terminator")
+		err = errors.New("MARC21: could not read record terminator")
 	}
 	return
 }
