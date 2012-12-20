@@ -1,25 +1,26 @@
 package main
+
 /*
-    Go Language MARC21 to XML Converter
-    Copyright (C) 2011 William Waites
+   Go Language MARC21 to XML Converter
+   Copyright (C) 2011 William Waites
 
-    This program is free software: you can redistribute it and/or
-    modify it under the terms of the GNU General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    and the GNU General Public License along with this program (the
-    named GPL3).  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   and the GNU General Public License along with this program (the
+   named GPL3).  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import (
-	"bitbucket.org/ww/marc21"
+	"git.gitorious.org/marc21-go/marc21.git"
 	"compress/gzip"
 	"flag"
 	"fmt"
@@ -34,10 +35,10 @@ func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "\n%s\n\n", "Go MARC21 - XML Converter")
 		fmt.Fprintf(os.Stderr, "\nCopyright (c) 2011 William Waites\n")
-		fmt.Fprintf(os.Stderr, "This program comes with ABSOLUTELY NO WARRANTY\n");
-		fmt.Fprintf(os.Stderr, "This is free software, and you are welcome to redistribute it\n");
-		fmt.Fprintf(os.Stderr, "under certain conditions. See the GPL and LGPL (version 3 or later)\n"); 
-		fmt.Fprintf(os.Stderr, "for details.\n\n");
+		fmt.Fprintf(os.Stderr, "This program comes with ABSOLUTELY NO WARRANTY\n")
+		fmt.Fprintf(os.Stderr, "This is free software, and you are welcome to redistribute it\n")
+		fmt.Fprintf(os.Stderr, "under certain conditions. See the GPL and LGPL (version 3 or later)\n")
+		fmt.Fprintf(os.Stderr, "for details.\n\n")
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] infile.mrc [outfile.xml]\n\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n")
@@ -94,14 +95,14 @@ func main() {
 	}
 }
 
-func marc2xml(reader io.Reader, writer io.Writer) (err os.Error) {
+func marc2xml(reader io.Reader, writer io.Writer) (err error) {
 	records := make(chan *marc21.Record)
 
 	go func() {
 		defer close(records)
 		for {
 			record, err := marc21.ReadRecord(reader)
-			if err == os.EOF {
+			if err == io.EOF {
 				break
 			}
 			if err != nil {
