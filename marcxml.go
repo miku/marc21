@@ -26,25 +26,32 @@ import (
 	"text/template"
 )
 
-func formatter(writer io.Writer, format string, values ...interface{}) {
-    record := template.Must(template.New("record").Parse(`  <record>
+const rt = `  <record>
     {Leader}{.repeated section Fields}
     {@}{.end}
   </record>
-`))
-    ldr := template.Must(template.New("ldr").Parse(`<leader>{String}</leader>`))
-    cf := template.Must(template.New("cf").Parse(`<control tag="{Tag}">{Data}</control>`))
-    df := template.Must(template.New("df").Parse(`<datafield tag="{Tag}" ind1="{Ind1}" ind2="{Ind2}">{.repeated section SubFields}
-          {@}{.end}
-        </datafield>`))
-    sf := template.Must(template.New("sf").Parse(`<subfield code="{Code}">{Value}</subfield>`))
+`
+const ldrt = `<leader>{String}</leader>`
+const cft = `<control tag="{Tag}">{Data}</control>`
+const dft = `<datafield tag="{Tag}" ind1="{Ind1}" ind2="{Ind2}">{.repeated section SubFields}
+      {@}{.end}
+    </datafield>`
+const sft = `<subfield code="{Code}">{Value}</subfield>`
+
+var rec = template.Must(template.New("record").Parse(rt))
+var ldr = template.Must(template.New("ldr").Parse(ldrt))
+var cf = template.Must(template.New("cf").Parse(cft))
+var df = template.Must(template.New("df").Parse(dft))
+var sf = template.Must(template.New("sf").Parse(sft))
+
+func formatter(writer io.Writer, format string, values ...interface{}) {
 
 	for _, value := range values {
 		switch field := value.(type) {
 		case *Record:
-			record.Execute(writer, field)
+			rec.Execute(writer, field)
 		case Record:
-			record.Execute(writer, field)
+			rec.Execute(writer, field)
 		case *Leader:
 			ldr.Execute(writer, field)
 		case Leader:
@@ -72,9 +79,7 @@ func formatter(writer io.Writer, format string, values ...interface{}) {
 }
 
 // Write a MARC/XML representation of the record
-/*
 func (record Record) XML(writer io.Writer) (err error) {
-	err = record.Execute(writer, record)
+	err = rec.Execute(writer, record)
 	return
 }
-*/
