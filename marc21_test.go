@@ -21,6 +21,7 @@ package marc21
 */
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -36,7 +37,7 @@ func TestReader(t *testing.T) {
 
 	count := 0
 	for {
-		_, err := ReadRecord(data)
+		r, err := ReadRecord(data)
 		if err == io.EOF {
 			break
 		}
@@ -44,7 +45,10 @@ func TestReader(t *testing.T) {
 			t.Fatal(err)
 		}
 		count++
-		/*		log.Print(record)
+		/*
+			r.XML(os.Stdout)
+			fmt.Println()
+			log.Print(record)
 				buf := &bytes.Buffer{}
 				err = record.XML(buf)
 				if err != nil {
@@ -55,7 +59,7 @@ func TestReader(t *testing.T) {
 		*/
 	}
 	if count != 85 {
-		t.Errorf("Expected to read 85 records, god %d", count)
+		t.Errorf("Expected to read 85 records, got %d", count)
 	}
 	log.Printf("%d records", count)
 }

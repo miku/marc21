@@ -28,6 +28,7 @@ package marc21
 
 import (
 	"bytes"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -194,8 +195,9 @@ func read_dirent(reader io.Reader) (dent *dirent, err error) {
 
 // A control field
 type ControlField struct {
-	Tag  string
-	Data string
+	XMLName xml.Name `xml:"controlfield"`
+	Tag string  `xml:"tag,attr"`
+	Data string `xml:",chardata"`
 }
 
 func (cf *ControlField) String() string {
@@ -222,14 +224,15 @@ func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
 		err = errors.New(errs)
 		return
 	}
-	field = &ControlField{dent.tag, string(data[:dent.length-1])}
+	field = &ControlField{Tag: dent.tag, Data: string(data[:dent.length-1])}
 	return
 }
 
 // A subfield within a variable data field
 type SubField struct {
-	Code  byte
-	Value string
+	XMLName xml.Name `xml:"subfield"`
+	Code byte `xml:"code,attr"`
+	Value string `xml:",chardata"`
 }
 
 func (sf SubField) String() string {
@@ -238,8 +241,10 @@ func (sf SubField) String() string {
 
 // A variable data field
 type DataField struct {
-	Tag        string
-	Ind1, Ind2 byte
+	XMLName xml.Name `xml:"datafield"`
+	Tag string  `xml:"tag,attr"`
+	Ind1 byte `xml:"ind1,attr"`
+	Ind2 byte `xml:"ind2,attr"`
 	SubFields  []*SubField
 }
 
@@ -281,7 +286,7 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
 		if len(sfbytes) == 0 {
 			continue
 		}
-		sf := &SubField{sfbytes[0], string(sfbytes[1:])}
+		sf := &SubField{Code: sfbytes[0], Value: string(sfbytes[1:])}
 		df.SubFields = append(df.SubFields, sf)
 	}
 
@@ -289,9 +294,10 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
 	return
 }
 
-// A MARC21 record consists in a leader and a number of fields
+// A MARC21 record consists of a leader and a number of fields
 type Record struct {
-	Leader *Leader
+	XMLName xml.Name    `xml:"record"`
+	Leader *Leader `xml:"leader"`
 	Fields []Field
 }
 
@@ -375,5 +381,19 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	if rtbuf[0] != RT {
 		err = errors.New("MARC21: could not read record terminator")
 	}
+	return
+}
+
+type RecordXML struct {
+	XMLName xml.Name    `xml:"record"`
+	Leader string `xml:"leader"`
+	Fields []Field
+}
+
+// Write a MARC/XML representation of the record
+func (record *Record) XML(writer io.Writer) (err error) {
+	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
+	output, err := xml.Marshal(xmlrec)
+	writer.Write(output)
 	return
 }
