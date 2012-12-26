@@ -22,9 +22,11 @@ package marc21
 
 import (
     "bytes"
+    "fmt"
 	"io"
 	"log"
 	"os"
+    "strings"
 	"testing"
 )
 
@@ -82,4 +84,181 @@ func TestToXML(t *testing.T) {
         t.Errorf("Output XML did not match expected XML")
     }
     log.Printf("XML output")
+}
+
+func TestGetFields (t *testing.T) {
+    const exp = `Record: 1
+650 [ 0] [(a) Cytodiagnosis.]
+650 [ 0] [(a) Histochemistry], [(x) Technique.]
+650 [ 2] [(a) Histocytochemistry.]
+650 [ 2] [(a) Histological Techniques.]
+Record: 2
+650 [ 0] [(a) Logic, Symbolic and mathematical.]
+Record: 4
+650 [ 0] [(a) Landscape drawing.]
+650 [ 0] [(a) Colors.]
+Record: 5
+650 [ 0] [(a) Musicals], [(z) United States], [(x) History and criticism.]
+650 [ 0] [(a) Musicals], [(x) Discography.]
+Record: 6
+650 [ 0] [(a) Opioid abuse.]
+Record: 7
+650 [ 4] [(a) Taxation], [(z) England], [(y) 1991.]
+650 [ 4] [(a) England], [(x) Taxation], [(y) 1991.]
+650 [ 0] [(a) Taxation], [(z) Great Britain.]
+Record: 8
+650 [ 0] [(a) Dragons], [(z) China.]
+650 [ 0] [(a) Dragons in art.]
+650 [ 0] [(a) Art, Chinese.]
+Record: 12
+650 [ 0] [(a) Navies], [(x) Insignia.]
+Record: 13
+650 [ 0] [(a) Real property tax], [(z) England], [(x) History.]
+Record: 14
+650 [ 0] [(a) Nuclear reactors], [(x) Control.]
+650 [ 0] [(a) Neutron flux.]
+Record: 17
+650 [ 0] [(a) Psychopharmacology.]
+650 [ 0] [(a) Psychotropic drugs.]
+Record: 18
+650 [ 0] [(a) Advertising.]
+Record: 19
+650 [ 0] [(a) God], [(x) History of doctrines.]
+650 [ 0] [(a) Secularization.]
+Record: 20
+650 [ 0] [(a) Germans], [(z) Czechoslovakia], [(x) History.]
+650 [ 0] [(a) Minorities], [(z) Czechoslovakia], [(x) History.]
+Record: 22
+650 [ 0] [(a) Homeopathy], [(x) Materia medica and therapeutics.]
+Record: 23
+650 [ 0] [(a) Songs with piano.]
+650 [ 0] [(a) Patriotic music.]
+Record: 24
+650 [ 0] [(a) Acoustical engineering.]
+650 [ 0] [(a) Noise control.]
+Record: 26
+650 [ 0] [(a) Judaism], [(x) Liturgy.]
+650 [ 0] [(a) Judaism], [(x) Customs and practices.]
+650 [ 0] [(a) Fasts and feasts], [(x) Judaism.]
+Record: 27
+650 [ 0] [(a) Electronic monitoring of parolees and probationers.]
+Record: 29
+650 [ 0] [(a) Tourism.]
+Record: 30
+650 [ 0] [(a) Computers and civilization], [(v) Humor.]
+Record: 31
+650 [ 0] [(a) Authors, Slovak], [(v) Diaries.]
+650 [ 0] [(a) World War, 1939-1945], [(x) Personal narratives, Slovak.]
+Record: 32
+650 [ 0] [(a) Latin language, Medieval and modern], [(x) Study and teaching], [(v) Congresses.]
+Record: 33
+650 [ 0] [(a) Missions], [(z) South Africa.]
+650 [ 0] [(a) Zulu (African people)], [(x) Missions.]
+Record: 35
+650 [ 0] [(a) Novelists, English], [(y) 20th century], [(v) Biography.]
+Record: 37
+650 [ 0] [(a) Negotiation in business.]
+Record: 38
+650 [ 0] [(a) Land reform], [(z) Zimbabwe.]
+650 [ 0] [(a) Land use], [(x) Government policy], [(z) Zimbabwe.]
+650 [ 0] [(a) Democracy], [(z) Zimbabwe.]
+Record: 39
+650 [ 0] [(a) Prints], [(y) 19th century], [(z) England], [(v) Exhibitions.]
+650 [ 0] [(a) Prints, English], [(v) Exhibitions.]
+Record: 40
+650 [ 0] [(a) Germans], [(z) Czechoslovakia], [(x) History.]
+650 [ 0] [(a) Minorities], [(z) Czechoslovakia], [(x) History.]
+Record: 42
+650 [ 0] [(a) Upper class], [(z) England], [(v) Humor.]
+650 [ 0] [(a) Etiquette], [(z) England], [(v) Humor.]
+650 [ 0] [(a) Eccentrics and eccentricities], [(z) England], [(v) Humor.]
+Record: 43
+650 [ 0] [(a) Conduct of life.]
+650 [ 0] [(a) Prostitution], [(z) Great Britain], [(x) History], [(y) 19th century], [(v) Sources.]
+650 [ 0] [(a) Women], [(z) Great Britain], [(x) Social conditions.]
+Record: 44
+650 [ 0] [(a) Authors, English], [(y) 17th century], [(v) Biography.]
+650 [ 0] [(a) Authors, English], [(y) 18th century], [(v) Biography.]
+Record: 58
+650 [ 0] [(a) Beauty operators], [(z) England], [(v) Biography.]
+Record: 59
+650 [ 0] [(a) Greek language, Modern.]
+650 [ 0] [(a) Mythology, Greek.]
+650 [ 0] [(a) Greek poetry, Modern], [(x) History and criticism.]
+Record: 62
+650 [ 0] [(a) Education], [(x) Philosophy.]
+650 [ 0] [(a) Art], [(x) Philosophy.]
+Record: 63
+650 [ 0] [(a) Inland navigation], [(z) Balkan Peninsula.]
+Record: 64
+650 [ 0] [(a) Exhumation], [(z) Saint Helena.]
+650 [ 0] [(a) Emperors], [(z) France], [(x) Death.]
+Record: 65
+650 [ 0] [(a) Catechisms, Greek.]
+Record: 66
+650 [ 0] [(a) History], [(x) Methodology.]
+650 [ 0] [(a) Linguistics.]
+Record: 68
+650 [ 0] [(a) Clothing and dress], [(z) Japan], [(x) History.]
+650 [ 0] [(a) Used clothing industry], [(z) Japan], [(x) History.]
+Record: 70
+650 [ 0] [(a) Painting, German.]
+650 [ 0] [(a) Painting, Flemish.]
+650 [ 0] [(a) Painting, Dutch.]
+Record: 71
+650 [ 0] [(a) Repudiation.]
+650 [ 0] [(a) State bankruptcy.]
+Record: 72
+650 [ 0] [(a) Slavic philology.]
+Record: 73
+650 [ 0] [(a) Victims of state-sponsored terrorism], [(z) Northern Ireland.]
+650 [ 0] [(a) Political violence], [(z) Northern Ireland.]
+650 [ 0] [(a) Violent deaths], [(z) Northern Ireland.]
+650 [ 0] [(a) Civil rights], [(z) Northern Ireland.]
+Record: 74
+650 [ 0] [(a) Slavery and the church], [(z) Southern States], [(x) History.]
+650 [ 0] [(a) Slavery], [(x) Moral and ethical aspects], [(z) Southern States], [(x) History.]
+650 [ 0] [(a) Slavery], [(z) Southern States], [(x) History.]
+650 [ 0] [(a) Christianity and culture], [(z) Southern States], [(x) History.]
+650 [ 0] [(a) Culture conflict], [(z) Southern States], [(x) History.]
+Record: 75
+650 [ 0] [(a) Songs with piano.]
+Record: 78
+650 [ 0] [(a) Symphonies], [(v) Excerpts], [(v) Scores.]
+Record: 79
+650 [ 0] [(a) Astronomy in literature.]
+650 [ 0] [(a) Cosmology in literature.]
+650 [ 0] [(a) Literature and science], [(x) History.]
+Record: 80
+650 [ 0] [(a) Sermons, Scottish], [(y) 19th century.]`
+
+    data, err := os.Open("test.mrc")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer data.Close()
+	count := 0
+    subjects := []string{}
+    for {
+        r, err := ReadRecord(data)
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            t.Fatal(err)
+        }
+        count++
+        t := r.GetFields("650")
+        if len(t) != 0 {
+            subjects = append(subjects, fmt.Sprintf("Record: %d", count))
+            for _, f := range t {
+                subjects = append(subjects, fmt.Sprintf("%s", f))
+            }
+        }
+    }
+    out := strings.Join(subjects, "\n")
+    if out != exp {
+        t.Error("Returned fields did not match expected fields")
+    }
+    log.Printf("GetFields()")
 }
