@@ -21,17 +21,17 @@ package marc21
 */
 
 import (
-    "bytes"
-    "fmt"
+	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
-    "strings"
+	"strings"
 	"testing"
 )
 
 func TestReader(t *testing.T) {
-    exp := 85
+	exp := 85
 	data, err := os.Open("test.mrc")
 	if err != nil {
 		t.Fatal(err)
@@ -67,27 +67,27 @@ func TestReader(t *testing.T) {
 }
 
 func TestToXML(t *testing.T) {
-    const exp = `<record><leader>00819cam a2200289   4500</leader><controlfield tag="001">50001</controlfield><controlfield tag="005">20010903131819.0</controlfield><controlfield tag="008">701012s1970    moua     b    001 0 eng  </controlfield><datafield tag="010" ind1="32" ind2="32"><subfield code="97">   73117956 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="97">ocm00094426 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="57">7003024381</subfield></datafield><datafield tag="040" ind1="32" ind2="32"><subfield code="97">DLC</subfield><subfield code="99">DLC</subfield><subfield code="100">OKO</subfield></datafield><datafield tag="020" ind1="32" ind2="32"><subfield code="97">0801657024</subfield></datafield><datafield tag="050" ind1="48" ind2="48"><subfield code="97">RC78.7.C9</subfield><subfield code="98">Z83</subfield></datafield><datafield tag="060" ind1="32" ind2="32"><subfield code="97">QS 504 Z94d 1970</subfield></datafield><datafield tag="082" ind1="48" ind2="48"><subfield code="97">616.07/583</subfield></datafield><datafield tag="049" ind1="32" ind2="32"><subfield code="97">CUDA</subfield></datafield><datafield tag="100" ind1="49" ind2="32"><subfield code="97">Zugibe, Frederick T.</subfield><subfield code="113">(Frederick Thomas),</subfield><subfield code="100">1928-</subfield></datafield><datafield tag="245" ind1="49" ind2="48"><subfield code="97">Diagnostic histochemistry</subfield><subfield code="99">[by] Frederick T. Zugibe.</subfield></datafield><datafield tag="260" ind1="32" ind2="32"><subfield code="97">Saint Louis,</subfield><subfield code="98">Mosby,</subfield><subfield code="99">1970.</subfield></datafield><datafield tag="300" ind1="32" ind2="32"><subfield code="97">xiv, 366 p.</subfield><subfield code="98">illus.</subfield><subfield code="99">25 cm.</subfield></datafield><datafield tag="504" ind1="32" ind2="32"><subfield code="97">Bibliography: p. 332-349.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Cytodiagnosis.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Histochemistry</subfield><subfield code="120">Technique.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histocytochemistry.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histological Techniques.</subfield></datafield><datafield tag="994" ind1="32" ind2="32"><subfield code="97">92</subfield><subfield code="98">CUD</subfield></datafield></record>`
+	const exp = `<record><leader>00819cam a2200289   4500</leader><controlfield tag="001">50001</controlfield><controlfield tag="005">20010903131819.0</controlfield><controlfield tag="008">701012s1970    moua     b    001 0 eng  </controlfield><datafield tag="010" ind1="32" ind2="32"><subfield code="97">   73117956 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="97">ocm00094426 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="57">7003024381</subfield></datafield><datafield tag="040" ind1="32" ind2="32"><subfield code="97">DLC</subfield><subfield code="99">DLC</subfield><subfield code="100">OKO</subfield></datafield><datafield tag="020" ind1="32" ind2="32"><subfield code="97">0801657024</subfield></datafield><datafield tag="050" ind1="48" ind2="48"><subfield code="97">RC78.7.C9</subfield><subfield code="98">Z83</subfield></datafield><datafield tag="060" ind1="32" ind2="32"><subfield code="97">QS 504 Z94d 1970</subfield></datafield><datafield tag="082" ind1="48" ind2="48"><subfield code="97">616.07/583</subfield></datafield><datafield tag="049" ind1="32" ind2="32"><subfield code="97">CUDA</subfield></datafield><datafield tag="100" ind1="49" ind2="32"><subfield code="97">Zugibe, Frederick T.</subfield><subfield code="113">(Frederick Thomas),</subfield><subfield code="100">1928-</subfield></datafield><datafield tag="245" ind1="49" ind2="48"><subfield code="97">Diagnostic histochemistry</subfield><subfield code="99">[by] Frederick T. Zugibe.</subfield></datafield><datafield tag="260" ind1="32" ind2="32"><subfield code="97">Saint Louis,</subfield><subfield code="98">Mosby,</subfield><subfield code="99">1970.</subfield></datafield><datafield tag="300" ind1="32" ind2="32"><subfield code="97">xiv, 366 p.</subfield><subfield code="98">illus.</subfield><subfield code="99">25 cm.</subfield></datafield><datafield tag="504" ind1="32" ind2="32"><subfield code="97">Bibliography: p. 332-349.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Cytodiagnosis.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Histochemistry</subfield><subfield code="120">Technique.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histocytochemistry.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histological Techniques.</subfield></datafield><datafield tag="994" ind1="32" ind2="32"><subfield code="97">92</subfield><subfield code="98">CUD</subfield></datafield></record>`
 
-    data, err := os.Open("test.mrc")
-    if err != nil {
-        t.Fatal(err)
-    }
-    defer data.Close()
-    r, err := ReadRecord(data)
-    buf := &bytes.Buffer{}
-    err = r.XML(buf)
-    if err != nil {
-        t.Fatal(err)
-    }
-    if exp != string(buf.Bytes()) {
-        t.Errorf("Output XML did not match expected XML")
-    }
-    log.Printf("XML output")
+	data, err := os.Open("test.mrc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer data.Close()
+	r, err := ReadRecord(data)
+	buf := &bytes.Buffer{}
+	err = r.XML(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exp != string(buf.Bytes()) {
+		t.Errorf("Output XML did not match expected XML")
+	}
+	log.Printf("XML output")
 }
 
-func TestGetFields (t *testing.T) {
-    const exp = `Record: 1
+func TestGetFields(t *testing.T) {
+	const exp = `Record: 1
 650 [ 0] [(a) Cytodiagnosis.]
 650 [ 0] [(a) Histochemistry], [(x) Technique.]
 650 [ 2] [(a) Histocytochemistry.]
@@ -232,33 +232,150 @@ Record: 79
 Record: 80
 650 [ 0] [(a) Sermons, Scottish], [(y) 19th century.]`
 
-    data, err := os.Open("test.mrc")
-    if err != nil {
-        t.Fatal(err)
-    }
-    defer data.Close()
+	data, err := os.Open("test.mrc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer data.Close()
 	count := 0
-    subjects := []string{}
-    for {
-        r, err := ReadRecord(data)
-        if err == io.EOF {
-            break
-        }
-        if err != nil {
-            t.Fatal(err)
-        }
-        count++
-        t := r.GetFields("650")
-        if len(t) != 0 {
-            subjects = append(subjects, fmt.Sprintf("Record: %d", count))
-            for _, f := range t {
-                subjects = append(subjects, fmt.Sprintf("%s", f))
-            }
-        }
-    }
-    out := strings.Join(subjects, "\n")
-    if out != exp {
-        t.Error("Returned fields did not match expected fields")
-    }
-    log.Printf("GetFields()")
+	subjects := []string{}
+	for {
+		r, err := ReadRecord(data)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		count++
+		t := r.GetFields("650")
+		if len(t) != 0 {
+			subjects = append(subjects, fmt.Sprintf("Record: %d", count))
+			for _, f := range t {
+				subjects = append(subjects, fmt.Sprintf("%s", f))
+			}
+		}
+	}
+	out := strings.Join(subjects, "\n")
+	if out != exp {
+		t.Error("Returned fields did not match expected fields")
+	}
+	log.Printf("GetFields()")
+}
+
+func TestGetSubFields(t *testing.T) {
+	const exp = `Record 1: (a) Diagnostic histochemistry
+Record 2: (a) Elements of mathematical logic :
+Record 3: (a) The Narren-motifs in the works of Georg Büchner.
+Record 4: (a) The way to sketch,
+Record 5: (a) The American musical theater;
+Record 6: (a) Opioids :
+Record 7: (a) Mayson on revenue law.
+Record 8: (a) Céleste dragon :
+Record 9: (a) The Geography of Lograire /
+Record 10: (a) Forskarbiografin :
+Record 11: (a) Swedish imprints 1731-1833 :
+Record 12: (a) Naval and Marine badges and insignia of World War 2 /
+Record 13: (a) Land tax assessments c.1690-c.1950 /
+Record 14: (a) Upravlenie neĭtronnym polem i︠a︡dernogo reaktora /
+Record 15: (a) The final analysis of Dr Stark /
+Record 16: (a) Érintések /
+Record 17: (a) Clinical pharmacology of psychotherapeutic drugs /
+Record 18: (a) Behind the scenes in advertising /
+Record 19: (a) The way of transcendence :
+Record 20: (a) Integration oder Ausgrenzung :
+Record 21: (a) Saunders Lewis /
+Record 22: (a) A materia medica of homeopathic formulas.
+Record 23: (a) Our monarch, the Prince and the nation :
+Record 24: (a) Acoustics and noise control /
+Record 25: (a) A letter to Dr. Bentley :
+Record 26: (a) Sefer Moreh be-ʾeṣbaʻ /
+Record 27: (a) Electronic tagging :
+Record 28: (a) The ebbing of the kraft /
+Record 29: (a) The business of tourism /
+Record 30: (a) The devouring fungus :
+Record 31: (a) Surová býva vše pravda života ...
+Record 32: (a) Vocabulary of teaching and research between Middle Ages and Renaissance :
+Record 33: (a) Umfundisi :
+Record 34: (a) Country life, and Society and solitude :
+Record 35: (a) My road :
+Record 36: (a) Nienasycenie /
+Record 37: (a) The outstanding negotiator :
+Record 38: (a) Land and democracy in Zimbabwe /
+Record 39: (a) Berufskünstler und Amateure, Whistler, Haden und die Blüte der Graphik in England :
+Record 40: (a) Integration oder Ausgrenzung :
+Record 41: (a) Saunders Lewis /
+Record 42: (a) The English gentleman /
+Record 43: (a) Social purity /
+Record 44: (a) Lives of Dryden and Pope /
+Record 45: (a) A system of medicine... Vol.5 /
+Record 46: (a) Parley's present for all seasons /
+Record 47: (a) An act for dividing and inclosing the open and common fields, meadows, and common fen within the parishes of Billingborough and Birthorpe, in the county of Lincoln, and for draining and improving the said fen.
+Record 48: (a) [Versus Christianismus, edur Sannur Christen̄domur, i fiorum Bokum... Saman̄skrifadur af Johanne Arndt... En̄ nu...wtlagdur a Islensku af...Þorleife Arnaysyne.
+Record 49: (a) Zhong hua da zang jing (Han wen bu fen).
+Record 50: (a) Sôgyokushi :
+Record 51: (a) Newsletter, An Foras Riarachain.
+Record 52: (a) Coop Developer.
+Record 53: (a) The Institute's professional qualifying examination and membership regulations /
+Record 54: (a) [The New Testament].
+Record 55: (a) In der Sprache der Sagas :
+Record 56: (a) The book of Psalms :
+Record 57: (a) Histoire sommaire de la civilisation depuis l'origine jusqu'à nos jours /
+Record 58: (a) My life (as I remember it) /
+Record 59: (a) Horae Hellenicæ :
+Record 60: (a) The Dance of death /
+Record 61: (a) Blaise Cendrars, une étude par Louis Parrot, un choix de poèmes et de textes, une bibliographie établie par J. H. Levesque, des inédits, des manuscrits, des dessins, des portraits.
+Record 62: (a) Plato's ideas on art and education /
+Record 63: (a) The Danube-Aegean waterway project :
+Record 64: (a) Journal du retour des cendres, 1840 :
+Record 65: (a) [Katēchēseis tēs Christianikēs pisteōs,] :
+Record 66: (a) Histoire et linguistique.
+Record 67: (a) The infallibility of the church. A course of lectures delivered in the Divinity School of the University of Dublin.
+Record 68: (a) Furugi /
+Record 69: (a) The Royal River: the Thames, from source to sea. Descriptive, historical, pictorial /
+Record 70: (a) Handbook of painting :
+Record 71: (a) The repudiation of state debts :
+Record 72: (a) Slavi︠a︡nskai︠a︡ filologii︠a︡:
+Record 73: (a) Unfinished business :
+Record 74: (a) Black & tan :
+Record 75: (a) Fem sang =
+Record 76: (a) The Church of St. Edward, King and Martyr, Corfe Castle.
+Record 77: (a) Four Thrilling Adventure Novels. Hearts of Three, by Jack London. The Crystal Skull, by Jack McLaren. The Master of Merripit, by Eden Phillpotts. Shadows by the Sea, by J. Jefferson Farjeon. [With illustrations.]
+Record 78: (a) [Symphony] :
+Record 79: (a) Thomas Hardy's novel universe :
+Record 80: (a) Our present hope and our future home :
+Record 81: (a) The paradox of prosperity :
+Record 82: (a) The Lancashire local historian and his theme.
+Record 83: (a) Business and government :
+Record 84: (a) Gamma rays from isotopes produced by (n, gamma) - reactions /
+Record 85: (a) Dante - the Divine comedy :`
+
+	data, err := os.Open("test.mrc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer data.Close()
+	count := 0
+	titles := []string{}
+	for {
+		r, err := ReadRecord(data)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		count++
+		t := r.GetSubFields("245", 'a')
+		if len(t) != 0 {
+			for _, f := range t {
+				titles = append(titles, fmt.Sprintf("Record %d: %s", count, f))
+			}
+		}
+	}
+	out := strings.Join(titles, "\n")
+	if out != exp {
+		t.Errorf("Returned subfields %s did not match expected subfields", out)
+	}
+	log.Printf("GetSubFields()")
 }
