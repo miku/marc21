@@ -1,75 +1,69 @@
 PACKAGE
 
 package marc21
-import "bitbucket.org/ww/marc21"
+    import "gitorious.org/marc21-go/marc21.git"
 
-An IO library for Go to read and write MARC21 bibliographic catalogue records.
-Copyright (C) 2011 William Waites
+    Package marc21 reads and writes MARC21 bibliographic catalogue records.
 
-    This program is free software: you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public License
-    as published by the Free Software Foundation, either version 3 of
-    the License, or (at your option) any later version.
+    Usage is straightforward. For example,
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License and the GNU General Public License along with this program
-    (the files COPYING and GPL3 respectively).  If not, see
-    <http://www.gnu.org/licenses/>.
-
-Usage is straightforward. For example,
-
-    marcfile, err := os.Open("somedata.mrc")
-    record, err := marc21.ReadRecord(marcfile)
-    err = record.XML(os.Stdout)
-
+	marcfile, err := os.Open("somedata.mrc")
+	record, err := marc21.ReadRecord(marcfile)
+	err = record.XML(os.Stdout)
 
 CONSTANTS
 
 const DELIM = 0x1F
-
+    Subfield delimiter.
 const RS = 0x1E
-
+    Record separator.
 const RT = 0x1D
+    Record terminator.
 
 
 VARIABLES
 
-var ERS os.ErrorString = "Record Separator (field terminator)"
+var ERS = errors.New("Record Separator (field terminator)")
 
 
 TYPES
 
 type ControlField struct {
-    Tag  string
-    Data string
+    XMLName xml.Name `xml:"controlfield"`
+    Tag     string   `xml:"tag,attr"`
+    Data    string   `xml:",chardata"`
 }
-A control field
+    ControlField represents a control field, which contains only a tag and
+    data.
 
 func (cf *ControlField) GetTag() string
+    ControlField.GetTag returns the tag for a ControlField.
 
 func (cf *ControlField) String() string
+    ControlField.String returns the ControlField as a string.
 
 type DataField struct {
-    Tag        string
-    Ind1, Ind2 byte
-    SubFields  []*SubField
+    XMLName   xml.Name `xml:"datafield"`
+    Tag       string   `xml:"tag,attr"`
+    Ind1      byte     `xml:"ind1,attr"`
+    Ind2      byte     `xml:"ind2,attr"`
+    SubFields []*SubField
 }
-A variable data field
+    DataField represents a variable data field, containing a tag, two
+    single-byte indicators, and one or more subfields.
 
 func (df *DataField) GetTag() string
+    DataField.GetTag returns the tag for a DataField.
 
 func (df *DataField) String() string
+    DataField.String returns the DataField as a string.
 
 type Field interface {
     String() string
     GetTag() string
 }
-The field interface is satisfied by Control and Data field types.
+    Field defines an interface that is satisfied by the Control and Data
+    field types.
 
 type Leader struct {
     Length                             int
@@ -80,42 +74,60 @@ type Leader struct {
     IndicatorCount, SubfieldCodeLength int
     LengthOfLength, LengthOfStartPos   int
 }
-A leader contains structural data about the MARC record
+    Leader represents the record leader, containing structural data about
+    the MARC record.
 
 func (leader Leader) Bytes() (buf []byte)
+    Leader.Bytes() returns the leader as a slice of 24 bytes.
 
 func (leader Leader) String() string
+    Leader.String() returns the leader as a string.
 
 type Record struct {
-    Leader *Leader
-    Fields []Field
+    XMLName xml.Name `xml:"record"`
+    Leader  *Leader  `xml:"leader"`
+    Fields  []Field
 }
-A MARC21 record consists in a leader and a number of fields
+    Record represents a MARC21 record, consisting of a leader and a number
+    of fields.
 
-func ReadRecord(reader io.Reader) (record *Record, err os.Error)
-Read a single MARC record from a reader.
+func ReadRecord(reader io.Reader) (record *Record, err error)
+    ReadRecord returns a single MARC record from a reader.
 
 func (record Record) GetFields(tag string) (fields []Field)
-Return the fields matching the given tag and code
+    Record.GetFields returns a slice of fields that match the given tag.
 
 func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField)
-Return the sub-fields matching the given tag and code
+    Record.GetSubFields returns a slice of subfields that match the given
+    tag and code.
 
 func (record Record) String() string
+    Record.String returns the Record as a string.
 
-func (record Record) XML(writer io.Writer) (err os.Error)
-Write a MARC/XML representation of the record
+func (record *Record) XML(writer io.Writer) (err error)
+    Record.XML writes a MARCXML representation of the record.
+
+type RecordXML struct {
+    XMLName xml.Name `xml:"record"`
+    Leader  string   `xml:"leader"`
+    Fields  []Field
+}
+    RecordXML represents a MARCXML record, with a root element named
+    'record'.
 
 type SubField struct {
-    Code  byte
-    Value string
+    XMLName xml.Name `xml:"subfield"`
+    Code    byte     `xml:"code,attr"`
+    Value   string   `xml:",chardata"`
 }
-A subfield within a variable data field
+    Subfield represents a subfield, containing a single-byte code and
+    associated data.
 
 func (sf SubField) String() string
+    SubField.String returns the subfield as a string.
 
 
 SUBDIRECTORIES
 
-	.hg
 	marc2xml
+

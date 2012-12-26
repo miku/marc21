@@ -1,31 +1,29 @@
+// Copyright (C) 2011 William Waites
+// Copyright (C) 2012 Dan Scott <dan@coffeecode.net>
+
+// This program is free software: you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License
+// as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License and the GNU General Public License along with this program
+// (the files COPYING and GPL3 respectively).  If not, see
+// <http://www.gnu.org/licenses/>.
+
 /*
-An IO library for Go to read and write MARC21 bibliographic catalogue records.
-
-Copyright (C) 2011 William Waites
-
-Copyright (C) 2012 Dan Scott <dan@coffeecode.net>
-
-    This program is free software: you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public License
-    as published by the Free Software Foundation, either version 3 of
-    the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License and the GNU General Public License along with this program
-    (the files COPYING and GPL3 respectively).  If not, see
-    <http://www.gnu.org/licenses/>.
+Package marc21 reads and writes MARC21 bibliographic catalogue records.
 
 Usage is straightforward. For example,
 
-    marcfile, err := os.Open("somedata.mrc")
-    record, err := marc21.ReadRecord(marcfile)
-    err = record.XML(os.Stdout)
-
+	marcfile, err := os.Open("somedata.mrc")
+	record, err := marc21.ReadRecord(marcfile)
+	err = record.XML(os.Stdout)
 */
 package marc21
 
@@ -39,7 +37,8 @@ import (
 	"strings"
 )
 
-// A leader contains structural data about the MARC record
+// Leader represents the record leader, containing structural data about the
+// MARC record.
 type Leader struct {
 	Length                             int
 	Status, Type                       byte
@@ -50,12 +49,14 @@ type Leader struct {
 	LengthOfLength, LengthOfStartPos   int
 }
 
-// The field interface is satisfied by Control and Data field types.
+// Field defines an interface that is satisfied by the Control and Data field
+// types.
 type Field interface {
 	String() string
 	GetTag() string
 }
 
+// Leader.Bytes() returns the leader as a slice of 24 bytes.
 func (leader Leader) Bytes() (buf []byte) {
 	buf = make([]byte, 24)
 	copy(buf[0:5], []byte(fmt.Sprintf("%05d", leader.Length)))
@@ -74,6 +75,7 @@ func (leader Leader) Bytes() (buf []byte) {
 	return
 }
 
+// Leader.String() returns the leader as a string.
 func (leader Leader) String() string {
 	return string(leader.Bytes())
 }
@@ -103,7 +105,7 @@ func read_leader(reader io.Reader) (leader *Leader, err error) {
 
 	leader.IndicatorCount, err = strconv.Atoi(string(data[10:11]))
 	if err != nil || leader.IndicatorCount != 2 {
-		errs := fmt.Sprintf("MARC21: erroneous indicator count, expecte '2', got %u", data[10])
+		errs := fmt.Sprintf("MARC21: erroneous indicator count, expected '2', got %u", data[10])
 		err = errors.New(errs)
 		return
 	}
@@ -157,8 +159,13 @@ type dirent struct {
 	startCharPos int
 }
 
+// Record terminator.
 const RT = 0x1D
+
+// Record separator.
 const RS = 0x1E
+
+// Subfield delimiter.
 const DELIM = 0x1F
 
 var ERS = errors.New("Record Separator (field terminator)")
@@ -196,18 +203,19 @@ func read_dirent(reader io.Reader) (dent *dirent, err error) {
 	return
 }
 
-// A control field
+// ControlField represents a control field, which contains only a tag and data.
 type ControlField struct {
 	XMLName xml.Name `xml:"controlfield"`
 	Tag     string   `xml:"tag,attr"`
 	Data    string   `xml:",chardata"`
 }
 
+// ControlField.String returns the ControlField as a string.
 func (cf *ControlField) String() string {
 	return fmt.Sprintf("%s %s", cf.Tag, cf.Data)
 }
 
-// Returns the tag for a ControlField
+// ControlField.GetTag returns the tag for a ControlField.
 func (cf *ControlField) GetTag() string {
 	return cf.Tag
 }
@@ -232,18 +240,21 @@ func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
 	return
 }
 
-// A subfield within a variable data field
+// Subfield represents a subfield, containing a single-byte code and
+// associated data.
 type SubField struct {
 	XMLName xml.Name `xml:"subfield"`
 	Code    byte     `xml:"code,attr"`
 	Value   string   `xml:",chardata"`
 }
 
+// SubField.String returns the subfield as a string.
 func (sf SubField) String() string {
 	return fmt.Sprintf("(%c) %s", sf.Code, sf.Value)
 }
 
-// A variable data field
+// DataField represents a variable data field, containing a tag, two
+// single-byte indicators, and one or more subfields.
 type DataField struct {
 	XMLName   xml.Name `xml:"datafield"`
 	Tag       string   `xml:"tag,attr"`
@@ -252,11 +263,12 @@ type DataField struct {
 	SubFields []*SubField
 }
 
-// Returns the tag for a DataField 
+// DataField.GetTag returns the tag for a DataField.
 func (df *DataField) GetTag() string {
 	return df.Tag
 }
 
+// DataField.String returns the DataField as a string.
 func (df *DataField) String() string {
 	subfields := make([]string, 0, len(df.SubFields))
 	for _, sf := range df.SubFields {
@@ -299,13 +311,15 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
 	return
 }
 
-// A MARC21 record consists of a leader and a number of fields
+// Record represents a MARC21 record, consisting of a leader and a number of
+// fields.
 type Record struct {
 	XMLName xml.Name `xml:"record"`
 	Leader  *Leader  `xml:"leader"`
 	Fields  []Field
 }
 
+// Record.String returns the Record as a string.
 func (record Record) String() string {
 	estrings := make([]string, len(record.Fields))
 	for i, entry := range record.Fields {
@@ -314,7 +328,7 @@ func (record Record) String() string {
 	return strings.Join(estrings, "\n")
 }
 
-// Return the fields matching the given tag
+// Record.GetFields returns a slice of fields that match the given tag.
 func (record Record) GetFields(tag string) (fields []Field) {
 	fields = make([]Field, 0, 4)
 	for _, field := range record.Fields {
@@ -325,7 +339,8 @@ func (record Record) GetFields(tag string) (fields []Field) {
 	return
 }
 
-// Return the subfields matching the given tag and code
+// Record.GetSubFields returns a slice of subfields that match the given tag
+// and code.
 func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField) {
 	subfields = make([]*SubField, 0, 4)
 	fields := record.GetFields(tag)
@@ -342,7 +357,7 @@ func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField)
 	return
 }
 
-// Read a single MARC record from a reader.
+// ReadRecord returns a single MARC record from a reader.
 func ReadRecord(reader io.Reader) (record *Record, err error) {
 	record = &Record{}
 	record.Fields = make([]Field, 0, 8)
@@ -389,14 +404,14 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	return
 }
 
-// A MARCXML record
+// RecordXML represents a MARCXML record, with a root element named 'record'.
 type RecordXML struct {
 	XMLName xml.Name `xml:"record"`
 	Leader  string   `xml:"leader"`
 	Fields  []Field
 }
 
-// Write a MARCXML representation of the record
+// Record.XML writes a MARCXML representation of the record.
 func (record *Record) XML(writer io.Writer) (err error) {
 	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
 	output, err := xml.Marshal(xmlrec)
