@@ -30,12 +30,18 @@ import (
 	"testing"
 )
 
-func TestReader(t *testing.T) {
-	exp := 85
+func openTestMARC(t *testing.T) (data *os.File) {
 	data, err := os.Open("test.mrc")
 	if err != nil {
 		t.Fatal(err)
 	}
+	return
+}
+
+func TestReader(t *testing.T) {
+	exp := 85
+
+	data := openTestMARC(t)
 	defer data.Close()
 
 	count := 0
@@ -66,14 +72,47 @@ func TestReader(t *testing.T) {
 	log.Printf("%d records", count)
 }
 
+func TestString(t *testing.T) {
+	const exp = `001 50001
+005 20010903131819.0
+008 701012s1970    moua     b    001 0 eng  
+010 [  ] [(a)    73117956 ]
+035 [  ] [(a) ocm00094426 ]
+035 [  ] [(9) 7003024381]
+040 [  ] [(a) DLC], [(c) DLC], [(d) OKO]
+020 [  ] [(a) 0801657024]
+050 [00] [(a) RC78.7.C9], [(b) Z83]
+060 [  ] [(a) QS 504 Z94d 1970]
+082 [00] [(a) 616.07/583]
+049 [  ] [(a) CUDA]
+100 [1 ] [(a) Zugibe, Frederick T.], [(q) (Frederick Thomas),], [(d) 1928-]
+245 [10] [(a) Diagnostic histochemistry], [(c) [by] Frederick T. Zugibe.]
+260 [  ] [(a) Saint Louis,], [(b) Mosby,], [(c) 1970.]
+300 [  ] [(a) xiv, 366 p.], [(b) illus.], [(c) 25 cm.]
+504 [  ] [(a) Bibliography: p. 332-349.]
+650 [ 0] [(a) Cytodiagnosis.]
+650 [ 0] [(a) Histochemistry], [(x) Technique.]
+650 [ 2] [(a) Histocytochemistry.]
+650 [ 2] [(a) Histological Techniques.]
+994 [  ] [(a) 92], [(b) CUD]`
+
+	data := openTestMARC(t)
+	defer data.Close()
+
+	r, _ := ReadRecord(data)
+	out := r.String()
+	if out != exp {
+		t.Errorf("Output record string %s did not match expected string", out)
+	}
+	log.Printf("Record.String()")
+}
+
 func TestToXML(t *testing.T) {
 	const exp = `<record><leader>00819cam a2200289   4500</leader><controlfield tag="001">50001</controlfield><controlfield tag="005">20010903131819.0</controlfield><controlfield tag="008">701012s1970    moua     b    001 0 eng  </controlfield><datafield tag="010" ind1="32" ind2="32"><subfield code="97">   73117956 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="97">ocm00094426 </subfield></datafield><datafield tag="035" ind1="32" ind2="32"><subfield code="57">7003024381</subfield></datafield><datafield tag="040" ind1="32" ind2="32"><subfield code="97">DLC</subfield><subfield code="99">DLC</subfield><subfield code="100">OKO</subfield></datafield><datafield tag="020" ind1="32" ind2="32"><subfield code="97">0801657024</subfield></datafield><datafield tag="050" ind1="48" ind2="48"><subfield code="97">RC78.7.C9</subfield><subfield code="98">Z83</subfield></datafield><datafield tag="060" ind1="32" ind2="32"><subfield code="97">QS 504 Z94d 1970</subfield></datafield><datafield tag="082" ind1="48" ind2="48"><subfield code="97">616.07/583</subfield></datafield><datafield tag="049" ind1="32" ind2="32"><subfield code="97">CUDA</subfield></datafield><datafield tag="100" ind1="49" ind2="32"><subfield code="97">Zugibe, Frederick T.</subfield><subfield code="113">(Frederick Thomas),</subfield><subfield code="100">1928-</subfield></datafield><datafield tag="245" ind1="49" ind2="48"><subfield code="97">Diagnostic histochemistry</subfield><subfield code="99">[by] Frederick T. Zugibe.</subfield></datafield><datafield tag="260" ind1="32" ind2="32"><subfield code="97">Saint Louis,</subfield><subfield code="98">Mosby,</subfield><subfield code="99">1970.</subfield></datafield><datafield tag="300" ind1="32" ind2="32"><subfield code="97">xiv, 366 p.</subfield><subfield code="98">illus.</subfield><subfield code="99">25 cm.</subfield></datafield><datafield tag="504" ind1="32" ind2="32"><subfield code="97">Bibliography: p. 332-349.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Cytodiagnosis.</subfield></datafield><datafield tag="650" ind1="32" ind2="48"><subfield code="97">Histochemistry</subfield><subfield code="120">Technique.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histocytochemistry.</subfield></datafield><datafield tag="650" ind1="32" ind2="50"><subfield code="97">Histological Techniques.</subfield></datafield><datafield tag="994" ind1="32" ind2="32"><subfield code="97">92</subfield><subfield code="98">CUD</subfield></datafield></record>`
 
-	data, err := os.Open("test.mrc")
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := openTestMARC(t)
 	defer data.Close()
+
 	r, err := ReadRecord(data)
 	buf := &bytes.Buffer{}
 	err = r.XML(buf)
@@ -232,11 +271,9 @@ Record: 79
 Record: 80
 650 [ 0] [(a) Sermons, Scottish], [(y) 19th century.]`
 
-	data, err := os.Open("test.mrc")
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := openTestMARC(t)
 	defer data.Close()
+
 	count := 0
 	subjects := []string{}
 	for {
@@ -350,11 +387,9 @@ Record 83: (a) Business and government :
 Record 84: (a) Gamma rays from isotopes produced by (n, gamma) - reactions /
 Record 85: (a) Dante - the Divine comedy :`
 
-	data, err := os.Open("test.mrc")
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := openTestMARC(t)
 	defer data.Close()
+
 	count := 0
 	titles := []string{}
 	for {

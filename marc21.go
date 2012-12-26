@@ -1,6 +1,9 @@
 /*
 An IO library for Go to read and write MARC21 bibliographic catalogue records.
+
 Copyright (C) 2011 William Waites
+
+Copyright (C) 2012 Dan Scott <dan@coffeecode.net>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
