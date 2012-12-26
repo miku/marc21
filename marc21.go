@@ -196,14 +196,15 @@ func read_dirent(reader io.Reader) (dent *dirent, err error) {
 // A control field
 type ControlField struct {
 	XMLName xml.Name `xml:"controlfield"`
-	Tag string  `xml:"tag,attr"`
-	Data string `xml:",chardata"`
+	Tag     string   `xml:"tag,attr"`
+	Data    string   `xml:",chardata"`
 }
 
 func (cf *ControlField) String() string {
 	return fmt.Sprintf("%s %s", cf.Tag, cf.Data)
 }
 
+// Returns the tag for a ControlField
 func (cf *ControlField) GetTag() string {
 	return cf.Tag
 }
@@ -231,8 +232,8 @@ func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
 // A subfield within a variable data field
 type SubField struct {
 	XMLName xml.Name `xml:"subfield"`
-	Code byte `xml:"code,attr"`
-	Value string `xml:",chardata"`
+	Code    byte     `xml:"code,attr"`
+	Value   string   `xml:",chardata"`
 }
 
 func (sf SubField) String() string {
@@ -241,13 +242,14 @@ func (sf SubField) String() string {
 
 // A variable data field
 type DataField struct {
-	XMLName xml.Name `xml:"datafield"`
-	Tag string  `xml:"tag,attr"`
-	Ind1 byte `xml:"ind1,attr"`
-	Ind2 byte `xml:"ind2,attr"`
-	SubFields  []*SubField
+	XMLName   xml.Name `xml:"datafield"`
+	Tag       string   `xml:"tag,attr"`
+	Ind1      byte     `xml:"ind1,attr"`
+	Ind2      byte     `xml:"ind2,attr"`
+	SubFields []*SubField
 }
 
+// Returns the tag for a DataField 
 func (df *DataField) GetTag() string {
 	return df.Tag
 }
@@ -296,9 +298,9 @@ func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
 
 // A MARC21 record consists of a leader and a number of fields
 type Record struct {
-	XMLName xml.Name    `xml:"record"`
-	Leader *Leader `xml:"leader"`
-	Fields []Field
+	XMLName xml.Name `xml:"record"`
+	Leader  *Leader  `xml:"leader"`
+	Fields  []Field
 }
 
 func (record Record) String() string {
@@ -309,7 +311,7 @@ func (record Record) String() string {
 	return strings.Join(estrings, "\n")
 }
 
-// Return the fields matching the given tag and code
+// Return the fields matching the given tag
 func (record Record) GetFields(tag string) (fields []Field) {
 	fields = make([]Field, 0, 4)
 	for _, field := range record.Fields {
@@ -320,7 +322,7 @@ func (record Record) GetFields(tag string) (fields []Field) {
 	return
 }
 
-// Return the sub-fields matching the given tag and code
+// Return the subfields matching the given tag and code
 func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField) {
 	subfields = make([]*SubField, 0, 4)
 	fields := record.GetFields(tag)
@@ -384,13 +386,14 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	return
 }
 
+// A MARCXML record
 type RecordXML struct {
-	XMLName xml.Name    `xml:"record"`
-	Leader string `xml:"leader"`
-	Fields []Field
+	XMLName xml.Name `xml:"record"`
+	Leader  string   `xml:"leader"`
+	Fields  []Field
 }
 
-// Write a MARC/XML representation of the record
+// Write a MARCXML representation of the record
 func (record *Record) XML(writer io.Writer) (err error) {
 	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
 	output, err := xml.Marshal(xmlrec)
