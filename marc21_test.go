@@ -414,3 +414,49 @@ Record 85: (a) Dante - the Divine comedy :`
 	}
 	log.Printf("GetSubFields()")
 }
+
+// Basic example of how to modify a record
+func TestAppendField(t *testing.T) {
+	const exp = `001 50001
+005 20010903131819.0
+008 701012s1970    moua     b    001 0 eng  
+010 [  ] [(a)    73117956 ]
+035 [  ] [(a) ocm00094426 ]
+035 [  ] [(9) 7003024381]
+040 [  ] [(a) DLC], [(c) DLC], [(d) OKO]
+020 [  ] [(a) 0801657024]
+050 [00] [(a) RC78.7.C9], [(b) Z83]
+060 [  ] [(a) QS 504 Z94d 1970]
+082 [00] [(a) 616.07/583]
+049 [  ] [(a) CUDA]
+100 [1 ] [(a) Zugibe, Frederick T.], [(q) (Frederick Thomas),], [(d) 1928-]
+245 [10] [(a) Diagnostic histochemistry], [(c) [by] Frederick T. Zugibe.]
+260 [  ] [(a) Saint Louis,], [(b) Mosby,], [(c) 1970.]
+300 [  ] [(a) xiv, 366 p.], [(b) illus.], [(c) 25 cm.]
+504 [  ] [(a) Bibliography: p. 332-349.]
+650 [ 0] [(a) Cytodiagnosis.]
+650 [ 0] [(a) Histochemistry], [(x) Technique.]
+650 [ 2] [(a) Histocytochemistry.]
+650 [ 2] [(a) Histological Techniques.]
+994 [  ] [(a) 92], [(b) CUD]
+650 [ 0] [(a) Unit testing.]`
+
+	data := openTestMARC(t)
+	defer data.Close()
+
+	r, _ := ReadRecord(data)
+	// Build a subfield first
+	s := &SubField{Code: 'a', Value: `Unit testing.`}
+	// Wrap the subfield in a slice
+	sf := make([]*SubField, 0)
+	sf = append(sf, s)
+	// Create a datafield containing the subfield slice
+	df := &DataField{Tag: `650`, Ind1: ' ', Ind2: '0', SubFields: sf}
+	// Append the datafield to the record
+	r.Fields = append(r.Fields, df)
+	out := r.String()
+	if out != exp {
+		t.Errorf("Output record string %s did not match expected string", out)
+	}
+	log.Printf("Append a field to a record")
+}
