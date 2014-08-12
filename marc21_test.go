@@ -120,7 +120,7 @@ func TestToXML(t *testing.T) {
 		t.Fatal(err)
 	}
 	if exp != string(buf.Bytes()) {
-		t.Errorf("Output XML did not match expected XML")
+		t.Errorf("Output XML did not match expected XML, got: %s", string(buf.Bytes()))
 	}
 	log.Printf("XML output")
 }
