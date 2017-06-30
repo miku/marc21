@@ -531,5 +531,4 @@ func TestAppendField(t *testing.T) {
 	if out != exp {
 		t.Errorf("Output record string %s did not match expected string", out)
 	}
-	log.Printf("Append a field to a record")
 }
