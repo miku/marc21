@@ -12,8 +12,7 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	record = &Record{}
 	record.Fields = make([]Field, 0, 8)
 
-	record.Leader, err = readLeader(reader)
-	if err != nil {
+	if record.Leader, err = readLeader(reader); err != nil {
 		return
 	}
 	dents := make([]*dirent, 0, 8)
@@ -44,8 +43,7 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 		record.Fields = append(record.Fields, field)
 	}
 	rtbuf := make([]byte, 1)
-	_, err = reader.Read(rtbuf)
-	if err != nil {
+	if _, err = reader.Read(rtbuf); err != nil {
 		return
 	}
 	if rtbuf[0] != RT {
@@ -62,14 +60,14 @@ type RecordXML struct {
 }
 
 // WriteTo writes a MARCXML representation of the record.
-func (record *Record) WriteTo(w io.Writer) (n int64, err error) {
+func (record *Record) WriteTo(w io.Writer) (int64, error) {
 	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
 	output, err := xml.Marshal(xmlrec)
 	if err != nil {
 		return 0, err
 	}
-	nn, err := w.Write(output)
-	return int64(nn), err
+	n, err := w.Write(output)
+	return int64(n), err
 }
 
 // Record represents a MARC21 record, consisting of a leader and a number of
