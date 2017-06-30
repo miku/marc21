@@ -75,7 +75,7 @@ func main() {
 	}
 
 	if flag.NArg() > 1 {
-		if writer, err = os.Open(flag.Arg(1)); err != nil {
+		if writer, err = os.Create(flag.Arg(1)); err != nil {
 			log.Fatal(err)
 		}
 		defer writer.Close()
