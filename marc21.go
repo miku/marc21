@@ -7,6 +7,24 @@ import (
 	"strconv"
 )
 
+type dirent struct {
+	tag          string
+	length       int
+	startCharPos int
+}
+
+const (
+	// RT is the record terminator.
+	RT = 0x1D
+	// RS is the record separator.
+	RS = 0x1E
+	// DELIM is the subfield delimiter.
+	DELIM = 0x1F
+)
+
+// ErrFieldSeparator if we encounter a field separator in a weird place.
+var ErrFieldSeparator = errors.New("Record Separator (field terminator)")
+
 // Leader represents the record leader, containing structural data about the
 // MARC record.
 type Leader struct {
@@ -103,24 +121,6 @@ func readLeader(reader io.Reader) (leader *Leader, err error) {
 	}
 	return
 }
-
-type dirent struct {
-	tag          string
-	length       int
-	startCharPos int
-}
-
-// RT is the record terminator.
-const RT = 0x1D
-
-// RS is the record separator.
-const RS = 0x1E
-
-// DELIM is the subfield delimiter.
-const DELIM = 0x1F
-
-// ErrFieldSeparator if we encounter a field separator in a weird place.
-var ErrFieldSeparator = errors.New("Record Separator (field terminator)")
 
 // readDirEnt read an direcotory entry.
 func readDirEnt(reader io.Reader) (dent *dirent, err error) {
