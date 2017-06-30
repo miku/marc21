@@ -15,13 +15,6 @@ type Record struct {
 	Fields  []Field
 }
 
-// RecordXML represents a MARCXML record, with a root element named 'record'.
-type RecordXML struct {
-	XMLName xml.Name `xml:"record"`
-	Leader  string   `xml:"leader"`
-	Fields  []Field
-}
-
 // ReadRecord returns a single MARC record from a reader.
 func ReadRecord(reader io.Reader) (record *Record, err error) {
 	record = &Record{}
@@ -67,14 +60,29 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	return
 }
 
+// MarshalXML encodes a record as XML.
+func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Name = xml.Name{Local: "record"}
+	if err := e.EncodeToken(start); err != nil {
+		return err
+	}
+	leaderTag := xml.StartElement{Name: xml.Name{Local: "leader"}}
+	if err := e.EncodeElement(record.Leader.String(), leaderTag); err != nil {
+		return err
+	}
+	if err := e.Encode(record.Fields); err != nil {
+		return err
+	}
+	return e.EncodeToken(xml.EndElement{Name: start.Name})
+}
+
 // WriteTo writes a MARCXML representation of the record.
 func (record *Record) WriteTo(w io.Writer) (int64, error) {
-	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
-	output, err := xml.Marshal(xmlrec)
+	b, err := xml.Marshal(record)
 	if err != nil {
 		return 0, err
 	}
-	n, err := w.Write(output)
+	n, err := w.Write(b)
 	return int64(n), err
 }
 
