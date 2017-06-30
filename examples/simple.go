@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	io.WriteString(os.Stdout, "<collection>")
 	for {
 		r, err := marc21.ReadRecord(os.Stdin)
 		if err == io.EOF {
@@ -21,4 +22,5 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	io.WriteString(os.Stdout, "</collection>")
 }
