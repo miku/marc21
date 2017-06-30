@@ -89,6 +89,20 @@ func TestEmptyWrongLength(t *testing.T) {
 	}
 }
 
+// TestNonNumericLength tests a record with a nonnumeric length. Note: This could
+// be mitigated by ignoring the length field and just read up to the next record
+// separator.
+func TestNonNumericLength(t *testing.T) {
+	file, err := os.Open("fixtures/r3.mrc")
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = ReadRecord(file)
+	if err == nil {
+		t.Errorf("ReadRecord, got %v, want %v", err, "some error")
+	}
+}
+
 func openTestMARC(t *testing.T) (data *os.File) {
 	data, err := os.Open("fixtures/test.mrc")
 	if err != nil {
