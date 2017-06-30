@@ -71,6 +71,24 @@ func TestWhitespaceIdentifier(t *testing.T) {
 	}
 }
 
+// TestEmptyWrongLength tests an empty record with wrong length.
+func TestEmptyWrongLength(t *testing.T) {
+	file, err := os.Open("fixtures/r2.mrc")
+	if err != nil {
+		t.Error(err)
+	}
+	record, err := ReadRecord(file)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(record.Fields) != 0 {
+		t.Errorf("record.Fields, got %v, want %v", len(record.Fields), 0)
+	}
+	if record.Leader.Length != 21 {
+		t.Errorf("record.Leader.Length, got %v, want %v", record.Leader.Length, 0)
+	}
+}
+
 func openTestMARC(t *testing.T) (data *os.File) {
 	data, err := os.Open("fixtures/test.mrc")
 	if err != nil {
