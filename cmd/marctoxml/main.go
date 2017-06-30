@@ -49,39 +49,39 @@ func (sew stickyErrWriter) Write(p []byte) (n int, err error) {
 func main() {
 	flag.Parse()
 
-	var rc = ioutil.NopCloser(os.Stdin)
-	var writer io.Writer = os.Stdout
+	var reader = ioutil.NopCloser(os.Stdin)
+	var writer io.WriteCloser = os.Stdout
 	var err error
 
 	if flag.NArg() > 0 {
-		if rc, err = os.Open(flag.Arg(0)); err != nil {
+		if reader, err = os.Open(flag.Arg(0)); err != nil {
 			log.Fatal(err)
 		}
-		defer rc.Close()
+		defer reader.Close()
 	}
 
 	if flag.NArg() > 1 {
 		if writer, err = os.Open(flag.Arg(1)); err != nil {
 			log.Fatal(err)
 		}
+		defer writer.Close()
 	}
 
 	w := &stickyErrWriter{writer, &err}
-
 	var once sync.Once
 
 	for {
-		record, err := marc21.ReadRecord(rc)
+		record, err := marc21.ReadRecord(reader)
 		if err == io.EOF {
 			break
+		}
+		if err != nil {
+			log.Fatal(err)
 		}
 		once.Do(func() {
 			io.WriteString(w, declaration)
 			io.WriteString(w, `<collection xmlns="http://www.loc.gov/MARC21/slim">`)
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 		record.WriteTo(w)
 	}
 	io.WriteString(w, "</collection>\n")
