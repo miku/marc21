@@ -17,8 +17,9 @@ type Field interface {
 
 // ControlField represents a control field, which contains only a tag and data.
 type ControlField struct {
-	Tag  string `xml:"tag,attr"`
-	Data string `xml:",chardata"`
+	XMLName xml.Name `xml:"controlfield"`
+	Tag     string   `xml:"tag,attr"`
+	Data    string   `xml:",chardata"`
 }
 
 // String returns the ControlField as a string.
@@ -80,10 +81,9 @@ func (sf *SubField) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // DataField represents a variable data field, containing a tag, two
 // single-byte indicators, and one or more subfields.
 type DataField struct {
-	XMLName   xml.Name `xml:"datafield"`
-	Tag       string   `xml:"tag,attr"`
-	Ind1      byte     `xml:"ind1,attr"`
-	Ind2      byte     `xml:"ind2,attr"`
+	Tag       string `xml:"tag,attr"`
+	Ind1      byte   `xml:"ind1,attr"`
+	Ind2      byte   `xml:"ind2,attr"`
 	SubFields []*SubField
 }
 
