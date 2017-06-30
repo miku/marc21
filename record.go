@@ -60,6 +60,16 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	return
 }
 
+// Identifier returns the record identifier or an empty string.
+func (record *Record) Identifier() string {
+	for _, f := range record.Fields {
+		if f.GetTag() == "001" {
+			return f.String()
+		}
+	}
+	return ""
+}
+
 // MarshalXML encodes a record as XML.
 func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	start.Name = xml.Name{Local: "record"}
