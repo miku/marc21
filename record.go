@@ -10,9 +10,8 @@ import (
 // Record represents a MARC21 record, consisting of a leader and a number of
 // fields.
 type Record struct {
-	XMLName xml.Name `xml:"record"`
-	Leader  *Leader  `xml:"leader"`
-	Fields  []Field
+	Leader *Leader `xml:"leader"`
+	Fields []Field
 }
 
 // ReadRecord returns a single MARC record from a reader.

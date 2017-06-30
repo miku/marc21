@@ -17,9 +17,8 @@ type Field interface {
 
 // ControlField represents a control field, which contains only a tag and data.
 type ControlField struct {
-	XMLName xml.Name `xml:"controlfield"`
-	Tag     string   `xml:"tag,attr"`
-	Data    string   `xml:",chardata"`
+	Tag  string `xml:"tag,attr"`
+	Data string `xml:",chardata"`
 }
 
 // String returns the ControlField as a string.
@@ -53,9 +52,8 @@ func readControl(reader io.Reader, dent *dirent) (field Field, err error) {
 // SubField represents a subfield, containing a single-byte code and
 // associated data.
 type SubField struct {
-	XMLName xml.Name `xml:"subfield"`
-	Code    byte     `xml:"code,attr"`
-	Value   string   `xml:",chardata"`
+	Code  byte   `xml:"code,attr"`
+	Value string `xml:",chardata"`
 }
 
 // String returns the subfield as a string.
@@ -65,6 +63,7 @@ func (sf SubField) String() string {
 
 // MarshalXML customized XML serialization.
 func (sf *SubField) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Name = xml.Name{Local: "subfield"}
 	start.Attr = []xml.Attr{
 		xml.Attr{Name: xml.Name{Local: "code"}, Value: string(sf.Code)},
 	}
@@ -90,6 +89,7 @@ type DataField struct {
 
 // MarshalXML customized XML serialization.
 func (df *DataField) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Name = xml.Name{Local: "datafield"}
 	start.Attr = []xml.Attr{
 		xml.Attr{Name: xml.Name{Local: "tag"}, Value: df.Tag},
 		xml.Attr{Name: xml.Name{Local: "ind1"}, Value: string(df.Ind1)},
