@@ -52,11 +52,12 @@ func main() {
 	flag.Parse()
 
 	if *cpuprofile != "" {
-		file, err := os.OpenFile(*cpuprofile, os.O_CREATE, 0666)
+		f, err := os.Create(*cpuprofile)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := pprof.StartCPUProfile(file); err != nil {
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
 			log.Fatal(err)
 		}
 		defer pprof.StopCPUProfile()
