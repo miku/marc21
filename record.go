@@ -64,7 +64,9 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 func (record *Record) Identifier() string {
 	for _, f := range record.Fields {
 		if f.GetTag() == "001" {
-			return f.String()
+			if v, ok := f.(*ControlField); ok {
+				return v.Data
+			}
 		}
 	}
 	return ""
