@@ -106,7 +106,7 @@ $ cat fixtures/sandburg.mrc | go run examples/simple.go | xmllint --format -
       <subfield code="a">One Mylar sheet included in pocket.</subfield>
     </datafield>
     <datafield tag="520" ind1=" " ind2=" ">
-      <subfield code="a">A poem about numbers and their characteristics. Features anamorphic, or distorted, drawings which can be restored to normal by viewing from a particular angle or by viewing the image's reflection in the provided Mylar cone.</subfield>
+      <subfield code="a">A poem about numbers and their characteristics ... </subfield>
     </datafield>
     <datafield tag="650" ind1=" " ind2="0">
       <subfield code="a">Arithmetic</subfield>
