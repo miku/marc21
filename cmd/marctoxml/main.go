@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime/pprof"
 	"sync"
 
 	"github.com/miku/marc21"
@@ -47,7 +48,19 @@ func (sew stickyErrWriter) Write(p []byte) (n int, err error) {
 }
 
 func main() {
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to this file")
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		file, err := os.OpenFile(*cpuprofile, os.O_CREATE, 0666)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := pprof.StartCPUProfile(file); err != nil {
+			log.Fatal(err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	var reader = ioutil.NopCloser(os.Stdin)
 	var writer io.WriteCloser = os.Stdout
