@@ -50,8 +50,8 @@ func main() {
 
 ```xml
 $ cat fixtures/sandburg.mrc | go run examples/simple.go | xmllint --format -
-<?xml version="1.0" encoding="utf-8"?>
-<collection xmlns="http://www.loc.gov/MARC21/slim">
+<?xml version="1.0"?>
+<collection>
   <record>
     <leader>01142cam  2200301 a 4500</leader>
     <controlfield tag="001">   92005291 </controlfield>
