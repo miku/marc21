@@ -63,6 +63,21 @@ func (sf SubField) String() string {
 	return fmt.Sprintf("(%c) %s", sf.Code, sf.Value)
 }
 
+// MarshalXML customized XML serialization.
+func (sf *SubField) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Attr = []xml.Attr{
+		xml.Attr{Name: xml.Name{Local: "code"}, Value: string(sf.Code)},
+	}
+	if err := e.EncodeToken(start); err != nil {
+		return err
+	}
+	data := xml.CharData([]byte(sf.Value))
+	if err := e.EncodeToken(data); err != nil {
+		return err
+	}
+	return e.EncodeToken(xml.EndElement{Name: start.Name})
+}
+
 // DataField represents a variable data field, containing a tag, two
 // single-byte indicators, and one or more subfields.
 type DataField struct {
@@ -71,6 +86,22 @@ type DataField struct {
 	Ind1      byte     `xml:"ind1,attr"`
 	Ind2      byte     `xml:"ind2,attr"`
 	SubFields []*SubField
+}
+
+// MarshalXML customized XML serialization.
+func (df *DataField) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Attr = []xml.Attr{
+		xml.Attr{Name: xml.Name{Local: "tag"}, Value: df.Tag},
+		xml.Attr{Name: xml.Name{Local: "ind1"}, Value: string(df.Ind1)},
+		xml.Attr{Name: xml.Name{Local: "ind2"}, Value: string(df.Ind2)},
+	}
+	if err := e.EncodeToken(start); err != nil {
+		return err
+	}
+	if err := e.Encode(df.SubFields); err != nil {
+		return err
+	}
+	return e.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
 // GetTag returns the tag for a DataField.
