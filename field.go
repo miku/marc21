@@ -23,17 +23,17 @@ type ControlField struct {
 	Data    string   `xml:",chardata"`
 }
 
-// ControlField.String returns the ControlField as a string.
+// String returns the ControlField as a string.
 func (cf *ControlField) String() string {
 	return fmt.Sprintf("%s %s", cf.Tag, cf.Data)
 }
 
-// ControlField.GetTag returns the tag for a ControlField.
+// GetTag returns the tag for a ControlField.
 func (cf *ControlField) GetTag() string {
 	return cf.Tag
 }
 
-func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
+func readControl(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
 	n, err := reader.Read(data)
 	if err != nil {
@@ -53,7 +53,7 @@ func read_control(reader io.Reader, dent *dirent) (field Field, err error) {
 	return
 }
 
-// Subfield represents a subfield, containing a single-byte code and
+// SubField represents a subfield, containing a single-byte code and
 // associated data.
 type SubField struct {
 	XMLName xml.Name `xml:"subfield"`
@@ -61,7 +61,7 @@ type SubField struct {
 	Value   string   `xml:",chardata"`
 }
 
-// SubField.String returns the subfield as a string.
+// String returns the subfield as a string.
 func (sf SubField) String() string {
 	return fmt.Sprintf("(%c) %s", sf.Code, sf.Value)
 }
@@ -76,12 +76,12 @@ type DataField struct {
 	SubFields []*SubField
 }
 
-// DataField.GetTag returns the tag for a DataField.
+// GetTag returns the tag for a DataField.
 func (df *DataField) GetTag() string {
 	return df.Tag
 }
 
-// DataField.String returns the DataField as a string.
+// String returns the DataField as a string.
 func (df *DataField) String() string {
 	subfields := make([]string, 0, len(df.SubFields))
 	for _, sf := range df.SubFields {
@@ -91,7 +91,7 @@ func (df *DataField) String() string {
 		strings.Join(subfields, ", "))
 }
 
-func read_data(reader io.Reader, dent *dirent) (field Field, err error) {
+func readData(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
 	n, err := reader.Read(data)
 	if err != nil {

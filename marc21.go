@@ -1,30 +1,3 @@
-// Copyright (C) 2011 William Waites
-// Copyright (C) 2012 Dan Scott <dan@coffeecode.net>
-
-// This program is free software: you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public License
-// as published by the Free Software Foundation, either version 3 of
-// the License, or (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License and the GNU General Public License along with this program
-// (the files COPYING and GPL3 respectively).  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
-Package marc21 reads and writes MARC21 bibliographic catalogue records.
-
-Usage is straightforward. For example,
-
-	marcfile, err := os.Open("somedata.mrc")
-	record, err := marc21.ReadRecord(marcfile)
-	err = record.XML(os.Stdout)
-*/
 package marc21
 
 import (
@@ -46,7 +19,7 @@ type Leader struct {
 	LengthOfLength, LengthOfStartPos   int
 }
 
-// Leader.Bytes() returns the leader as a slice of 24 bytes.
+// Bytes returns the leader as a slice of 24 bytes.
 func (leader Leader) Bytes() (buf []byte) {
 	buf = make([]byte, 24)
 	copy(buf[0:5], []byte(fmt.Sprintf("%05d", leader.Length)))
@@ -65,12 +38,12 @@ func (leader Leader) Bytes() (buf []byte) {
 	return
 }
 
-// Leader.String() returns the leader as a string.
+// String returns the leader as a string.
 func (leader Leader) String() string {
 	return string(leader.Bytes())
 }
 
-func read_leader(reader io.Reader) (leader *Leader, err error) {
+func readLeader(reader io.Reader) (leader *Leader, err error) {
 	data := make([]byte, 24)
 	n, err := reader.Read(data)
 	if err != nil {
@@ -95,13 +68,13 @@ func read_leader(reader io.Reader) (leader *Leader, err error) {
 
 	leader.IndicatorCount, err = strconv.Atoi(string(data[10:11]))
 	if err != nil || leader.IndicatorCount != 2 {
-		errs := fmt.Sprintf("MARC21: erroneous indicator count, expected '2', got %u", data[10])
+		errs := fmt.Sprintf("MARC21: erroneous indicator count, expected '2', got %v", data[10])
 		err = errors.New(errs)
 		return
 	}
 	leader.SubfieldCodeLength, err = strconv.Atoi(string(data[11:12]))
 	if err != nil || leader.SubfieldCodeLength != 2 {
-		errs := fmt.Sprintf("MARC21: erroneous subfield code length, expected '2', got %u", data[11])
+		errs := fmt.Sprintf("MARC21: erroneous subfield code length, expected '2', got %v", data[11])
 		err = errors.New(errs)
 		return
 	}
@@ -118,28 +91,16 @@ func read_leader(reader io.Reader) (leader *Leader, err error) {
 
 	leader.LengthOfLength, err = strconv.Atoi(string(data[20:21]))
 	if err != nil || leader.LengthOfLength != 4 {
-		errs := fmt.Sprintf("MARC21: invalid length of length, expected '4', got %u", data[20])
+		errs := fmt.Sprintf("MARC21: invalid length of length, expected '4', got %v", data[20])
 		err = errors.New(errs)
 		return
 	}
 	leader.LengthOfStartPos, err = strconv.Atoi(string(data[21:22]))
 	if err != nil || leader.LengthOfStartPos != 5 {
-		errs := fmt.Sprintf("MARC21: invalid length of starting character position, expected '5', got %u", data[21])
+		errs := fmt.Sprintf("MARC21: invalid length of starting character position, expected '5', got %v", data[21])
 		err = errors.New(errs)
 		return
 	}
-	/*
-		if data[22] != '0' {
-			errs := fmt.Sprintf("MARC21: invalid length of implementation defined portion, expected '0', got %u", data[22])
-			err = os.ErrorString(errs)
-			return
-		}
-		if data[23] != '0' {
-			errs := fmt.Sprintf("MARC21: invalid undefined in entry map, expected '0', got %u", data[23])
-			err = os.ErrorString(errs)
-			return
-		}
-	*/
 	return
 }
 
@@ -149,25 +110,27 @@ type dirent struct {
 	startCharPos int
 }
 
-// Record terminator.
+// RT is the record terminator.
 const RT = 0x1D
 
-// Record separator.
+// RS is the record separator.
 const RS = 0x1E
 
-// Subfield delimiter.
+// DELIM is the subfield delimiter.
 const DELIM = 0x1F
 
-var ERS = errors.New("Record Separator (field terminator)")
+// ErrFieldSeparator if we encounter a field separator in a weird place.
+var ErrFieldSeparator = errors.New("Record Separator (field terminator)")
 
-func read_dirent(reader io.Reader) (dent *dirent, err error) {
+// readDirEnt read an direcotory entry.
+func readDirEnt(reader io.Reader) (dent *dirent, err error) {
 	data := make([]byte, 12)
 	_, err = reader.Read(data[0:1])
 	if err != nil {
 		return
 	}
 	if data[0] == RS {
-		err = ERS
+		err = ErrFieldSeparator
 		return
 	}
 	n, err := reader.Read(data[1:])

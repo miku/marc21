@@ -20,13 +20,14 @@ package main
 */
 
 import (
-	"git.gitorious.org/marc21-go/marc21.git"
 	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/miku/marc21"
 )
 
 var gzoutput bool
@@ -73,10 +74,7 @@ func main() {
 	}
 
 	if gzoutput {
-		outfile, err = gzip.NewWriter(outfile)
-		if err != nil {
-			log.Fatal(err)
-		}
+		outfile = gzip.NewWriter(outfile)
 	}
 
 	err = marc2xml(infile, outfile)
@@ -119,7 +117,7 @@ func marc2xml(reader io.Reader, writer io.Writer) (err error) {
 	}
 
 	for record := range records {
-		err = record.XML(writer)
+		_, err = record.WriteTo(writer)
 		if err != nil {
 			return
 		}
