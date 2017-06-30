@@ -7,6 +7,21 @@ import (
 	"strings"
 )
 
+// Record represents a MARC21 record, consisting of a leader and a number of
+// fields.
+type Record struct {
+	XMLName xml.Name `xml:"record"`
+	Leader  *Leader  `xml:"leader"`
+	Fields  []Field
+}
+
+// RecordXML represents a MARCXML record, with a root element named 'record'.
+type RecordXML struct {
+	XMLName xml.Name `xml:"record"`
+	Leader  string   `xml:"leader"`
+	Fields  []Field
+}
+
 // ReadRecord returns a single MARC record from a reader.
 func ReadRecord(reader io.Reader) (record *Record, err error) {
 	record = &Record{}
@@ -52,13 +67,6 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 	return
 }
 
-// RecordXML represents a MARCXML record, with a root element named 'record'.
-type RecordXML struct {
-	XMLName xml.Name `xml:"record"`
-	Leader  string   `xml:"leader"`
-	Fields  []Field
-}
-
 // WriteTo writes a MARCXML representation of the record.
 func (record *Record) WriteTo(w io.Writer) (int64, error) {
 	xmlrec := &RecordXML{Leader: record.Leader.String(), Fields: record.Fields}
@@ -70,16 +78,13 @@ func (record *Record) WriteTo(w io.Writer) (int64, error) {
 	return int64(n), err
 }
 
-// Record represents a MARC21 record, consisting of a leader and a number of
-// fields.
-type Record struct {
-	XMLName xml.Name `xml:"record"`
-	Leader  *Leader  `xml:"leader"`
-	Fields  []Field
+// AddField adds a control or data field to a record.
+func (record *Record) AddField(f Field) {
+	record.Fields = append(record.Fields, f)
 }
 
 // String returns the Record as a string.
-func (record Record) String() string {
+func (record *Record) String() string {
 	estrings := make([]string, len(record.Fields))
 	for i, entry := range record.Fields {
 		estrings[i] = entry.String()
@@ -88,7 +93,7 @@ func (record Record) String() string {
 }
 
 // GetFields returns a slice of fields that match the given tag.
-func (record Record) GetFields(tag string) (fields []Field) {
+func (record *Record) GetFields(tag string) (fields []Field) {
 	fields = make([]Field, 0, 4)
 	for _, field := range record.Fields {
 		if field.GetTag() == tag {
@@ -100,7 +105,7 @@ func (record Record) GetFields(tag string) (fields []Field) {
 
 // GetSubFields returns a slice of subfields that match the given tag
 // and code.
-func (record Record) GetSubFields(tag string, code byte) (subfields []*SubField) {
+func (record *Record) GetSubFields(tag string, code byte) (subfields []*SubField) {
 	subfields = make([]*SubField, 0, 4)
 	fields := record.GetFields(tag)
 	for _, field := range fields {
