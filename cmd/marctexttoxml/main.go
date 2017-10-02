@@ -129,7 +129,8 @@ func parseField(b []byte) (marc21.Field, error) {
 	}
 }
 
-// fixupLeader fixes a too short leader by placing
+// fixupLeader fixes a 23 byte leader by placing adding a single byte into an
+// implementation specific position.
 func fixupLeader(b []byte) []byte {
 	if len(b) == 23 {
 		return append(append(b[0:18], []byte(" ")...), b[18:]...)
