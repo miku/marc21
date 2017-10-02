@@ -39,11 +39,11 @@ func readControl(reader io.Reader, dent *dirent) (field Field, err error) {
 		return
 	}
 	if n != dent.length {
-		err = fmt.Errorf("MARC21: invalid control entry, expected %d bytes, read %d", dent.length, n)
+		err = fmt.Errorf("invalid control entry, expected %d bytes, read %d", dent.length, n)
 		return
 	}
 	if data[dent.length-1] != RS {
-		err = fmt.Errorf("MARC21: invalid control entry, does not end with a field terminator")
+		err = fmt.Errorf("invalid control entry, does not end with a field terminator")
 		return
 	}
 	field = &ControlField{Tag: dent.tag, Data: string(data[:dent.length-1])}
@@ -126,11 +126,11 @@ func readData(reader io.Reader, dent *dirent) (field Field, err error) {
 		return
 	}
 	if n != dent.length {
-		err = fmt.Errorf("MARC21: invalid data entry, expected %d bytes, read %d", dent.length, n)
+		err = fmt.Errorf("invalid data entry, expected %d bytes, read %d", dent.length, n)
 		return
 	}
 	if data[dent.length-1] != RS {
-		err = fmt.Errorf("MARC21: invalid data entry, does not end with a field terminator")
+		err = fmt.Errorf("invalid data entry, does not end with a field terminator")
 		return
 	}
 

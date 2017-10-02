@@ -54,7 +54,7 @@ func ReadRecord(reader io.Reader) (record *Record, err error) {
 		return
 	}
 	if rtbuf[0] != RT {
-		err = errors.New("MARC21: could not read record terminator")
+		err = errors.New("could not read record terminator")
 	}
 	return
 }

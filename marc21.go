@@ -74,7 +74,7 @@ func readLeader(reader io.Reader) (leader *Leader, err error) {
 	leader = &Leader{}
 	leader.Length, err = strconv.Atoi(string(data[0:5]))
 	if err != nil {
-		err = fmt.Errorf("MARC21: invalid record length: %s", err)
+		err = fmt.Errorf("invalid record length: %s", err)
 		return
 	}
 	leader.Status = data[5]
@@ -84,19 +84,19 @@ func readLeader(reader io.Reader) (leader *Leader, err error) {
 
 	leader.IndicatorCount, err = strconv.Atoi(string(data[10:11]))
 	if err != nil || leader.IndicatorCount != 2 {
-		err = fmt.Errorf("MARC21: erroneous indicator count, expected '2', got %v", data[10])
+		err = fmt.Errorf("erroneous indicator count, expected '2', got %v", data[10])
 		return
 	}
 	leader.SubfieldCodeLength, err = strconv.Atoi(string(data[11:12]))
 	if err != nil || leader.SubfieldCodeLength != 2 {
-		err = fmt.Errorf("MARC21: erroneous subfield code length, expected '2', got %v", data[11])
+		err = fmt.Errorf("erroneous subfield code length, expected '2', got %v", data[11])
 		return
 	}
 
 	leader.BaseAddress, err = strconv.Atoi(string(data[12:17]))
 
 	if err != nil {
-		err = fmt.Errorf("MARC21: invalid base address: %s", err)
+		err = fmt.Errorf("invalid base address: %s", err)
 		return
 	}
 
@@ -130,7 +130,7 @@ func readDirEnt(reader io.Reader) (dent *dirent, err error) {
 		return
 	}
 	if n != 11 {
-		err = fmt.Errorf("MARC21: invalid directory entry, expected 12 bytes, got %d", n)
+		err = fmt.Errorf("invalid directory entry, expected 12 bytes, got %d", n)
 		return
 	}
 	dent = &dirent{}
