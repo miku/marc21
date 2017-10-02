@@ -129,6 +129,14 @@ func parseField(b []byte) (marc21.Field, error) {
 	}
 }
 
+// fixupLeader fixes a too short leader by placing
+func fixupLeader(b []byte) []byte {
+	if len(b) == 23 {
+		return append(append(b[0:17], []byte(" ")...), b[0:17]...)
+	}
+	return b
+}
+
 // parseRecord parses a textual marc record.
 func parseRecord(b []byte) *marc21.Record {
 	record := &marc21.Record{}
@@ -147,7 +155,8 @@ func parseRecord(b []byte) *marc21.Record {
 		}
 		switch string(b[1:4]) {
 		case "LDR":
-			leader, err := marc21.ParseLeader(bytes.NewReader(b[6:]))
+			lb := fixupLeader(b[6:])
+			leader, err := marc21.ParseLeader(bytes.NewReader(lb))
 			if err != nil {
 				log.Fatal(err)
 			}
