@@ -144,8 +144,7 @@ func parseRecord(b []byte) *marc21.Record {
 		if len(b) == 0 {
 			continue
 		}
-		tag := string(b[1:4])
-		switch tag {
+		switch string(b[1:4]) {
 		case "LDR":
 			leader, err := marc21.ParseLeader(bytes.NewReader(b[6:]))
 			if err != nil {
