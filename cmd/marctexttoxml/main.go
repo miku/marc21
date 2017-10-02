@@ -38,7 +38,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -48,8 +47,30 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var declaration = `<?xml version="1.0" encoding="utf-8" ?>`
+var (
+	declaration     = `<?xml version="1.0" encoding="utf-8" ?>`
+	subfieldPattern = regexp.MustCompile(`([$][a-z0-9])(.*?)`)
+)
 
+// stickyErrWriter keeps an error around, so you can *occasionally* check if an
+// error occured.
+type stickyErrWriter struct {
+	w   io.Writer
+	err *error
+}
+
+// Write writes the given bytes to the underlying writer. If the writer
+// encountered an error already, this method does nothing.
+func (sew stickyErrWriter) Write(p []byte) (n int, err error) {
+	if *sew.err != nil {
+		return 0, *sew.err
+	}
+	n, err = sew.w.Write(p)
+	*sew.err = err
+	return
+}
+
+// parseControlField parses bytes containing a control field.
 func parseControlField(b []byte) (*marc21.ControlField, error) {
 	return &marc21.ControlField{
 		Tag:  string(b[1:4]),
@@ -57,8 +78,45 @@ func parseControlField(b []byte) (*marc21.ControlField, error) {
 	}, nil
 }
 
+// decodeWhitespace decodes marc maker/breaker whitespace encoding.
+func decodeWhitespace(b byte) byte {
+	if b == 92 {
+		return ' '
+	}
+	return b
+}
+
+// parseSubfields parses bytes only containing subfield information.
+func parseSubfields(b []byte) (subfields []*marc21.SubField) {
+	if len(b) == 0 {
+		return
+	}
+	indices := subfieldPattern.FindAllIndex(b, -1)
+	for i, index := range indices {
+		if i < len(indices)-1 {
+			subfields = append(subfields, &marc21.SubField{
+				Code:  b[index[1]-1],
+				Value: string(b[index[1]:indices[i+1][0]]),
+			})
+		} else {
+			subfields = append(subfields, &marc21.SubField{
+				Code:  b[index[1]-1],
+				Value: string(b[index[1]:]),
+			})
+		}
+	}
+	return
+}
+
+// parseDataField parses a line containing a data field.
 func parseDataField(b []byte) (*marc21.DataField, error) {
-	return &marc21.DataField{}, fmt.Errorf("not implemented")
+	field := &marc21.DataField{
+		Tag:       string(b[1:4]),
+		Ind1:      decodeWhitespace(b[6]),
+		Ind2:      decodeWhitespace(b[7]),
+		SubFields: parseSubfields(b[8:]),
+	}
+	return field, nil
 }
 
 func parseField(b []byte) (marc21.Field, error) {
@@ -112,7 +170,9 @@ func main() {
 	var buf bytes.Buffer
 	var count int64
 	var once sync.Once
-	var w = os.Stdout
+	var err error
+
+	w := &stickyErrWriter{os.Stdout, &err}
 
 	for {
 		b, err := br.ReadBytes('\n')
@@ -138,4 +198,7 @@ func main() {
 		}
 	}
 	io.WriteString(w, "</collection>\n")
+	if *w.err != nil {
+		log.Fatal(err)
+	}
 }
