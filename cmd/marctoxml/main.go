@@ -32,12 +32,15 @@ import (
 
 var declaration = `<?xml version="1.0" encoding="utf-8" ?>`
 
-// stickyErrWriter keeps an error around, so you can *occasionally* check if an error occured.
+// stickyErrWriter keeps an error around, so you can *occasionally* check if an
+// error occured.
 type stickyErrWriter struct {
 	w   io.Writer
 	err *error
 }
 
+// Write writes the given bytes to the underlying writer. If the writer
+// encountered an error already, this method does nothing.
 func (sew stickyErrWriter) Write(p []byte) (n int, err error) {
 	if *sew.err != nil {
 		return 0, *sew.err
