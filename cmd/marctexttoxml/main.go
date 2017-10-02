@@ -167,7 +167,6 @@ func main() {
 	fieldPattern := regexp.MustCompile(`(^=[0-9][0-9][0-9]|^=LDR)`)
 
 	var buf bytes.Buffer
-	var count int64
 	var once sync.Once
 	var err error
 
@@ -187,9 +186,7 @@ func main() {
 					io.WriteString(w, `<collection xmlns="http://www.loc.gov/MARC21/slim">`)
 				})
 				record.WriteTo(w)
-				count++
 				buf.Reset()
-
 			}
 		}
 		if _, err := buf.Write(b); err != nil {
