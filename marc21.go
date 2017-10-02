@@ -72,8 +72,8 @@ func readLeader(reader io.Reader) (leader *Leader, err error) {
 	if err != nil {
 		return
 	}
-	if n != 24 {
-		err = fmt.Errorf("MARC21: invalid leader: expected 24 bytes, read %d", n)
+	if n < 23 {
+		err = fmt.Errorf("invalid leader: expected 24 bytes, read %d", n)
 		return
 	}
 	leader = &Leader{}
@@ -108,15 +108,22 @@ func readLeader(reader io.Reader) (leader *Leader, err error) {
 	copy(leader.ImplementationDefined[2:5], data[17:20])
 
 	leader.LengthOfLength, err = strconv.Atoi(string(data[20:21]))
-	if err != nil || leader.LengthOfLength != 4 {
-		err = fmt.Errorf("MARC21: invalid length of length, expected '4', got %v", data[20])
+	if err != nil {
 		return
 	}
+	// if err != nil || leader.LengthOfLength != 4 {
+	// 	err = fmt.Errorf("invalid length of length, expected '4', got %c", data[20])
+	// 	return
+	// }
+
 	leader.LengthOfStartPos, err = strconv.Atoi(string(data[21:22]))
-	if err != nil || leader.LengthOfStartPos != 5 {
-		err = fmt.Errorf("MARC21: invalid length of starting character position, expected '5', got %v", data[21])
+	if err != nil {
 		return
 	}
+	// if err != nil || leader.LengthOfStartPos != 5 {
+	// 	err = fmt.Errorf("invalid length of starting character position, expected '5', got %c", data[21])
+	// 	return
+	// }
 	return
 }
 
