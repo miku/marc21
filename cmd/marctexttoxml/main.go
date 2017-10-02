@@ -119,6 +119,7 @@ func parseDataField(b []byte) (*marc21.DataField, error) {
 	return field, nil
 }
 
+// parseField dispatches parsing for control and datafields.
 func parseField(b []byte) (marc21.Field, error) {
 	switch string(b[1:4]) {
 	case "001", "002", "003", "004", "005", "006", "007", "008", "009":
@@ -178,9 +179,9 @@ func main() {
 			break
 		}
 		if fieldPattern.Match(b) {
+			// This is true, when we have a complete record buffered.
 			if len(buf.Bytes()) > 0 && bytes.HasPrefix(b, []byte("=LDR")) {
 				record := parseRecord(buf.Bytes())
-
 				once.Do(func() {
 					io.WriteString(w, declaration)
 					io.WriteString(w, `<collection xmlns="http://www.loc.gov/MARC21/slim">`)
