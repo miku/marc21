@@ -39,12 +39,12 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"sync"
 
 	"github.com/miku/marc21"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
