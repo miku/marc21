@@ -61,6 +61,11 @@ func (leader Leader) String() string {
 	return string(leader.Bytes())
 }
 
+// ParseLeader parses a leader into a Leader structure.
+func ParseLeader(r io.Reader) (leader *Leader, err error) {
+	return readLeader(r)
+}
+
 func readLeader(reader io.Reader) (leader *Leader, err error) {
 	data := make([]byte, 24)
 	n, err := reader.Read(data)
