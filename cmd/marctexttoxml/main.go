@@ -49,6 +49,7 @@ import (
 
 var (
 	declaration     = `<?xml version="1.0" encoding="utf-8" ?>`
+	fieldPattern    = regexp.MustCompile(`(^=[0-9][0-9][0-9]|^=LDR)`)
 	subfieldPattern = regexp.MustCompile(`([$][a-z0-9])(.*?)`)
 )
 
@@ -175,7 +176,6 @@ func parseRecord(b []byte) *marc21.Record {
 
 func main() {
 	br := bufio.NewReader(os.Stdin)
-	fieldPattern := regexp.MustCompile(`(^=[0-9][0-9][0-9]|^=LDR)`)
 
 	var buf bytes.Buffer
 	var once sync.Once
