@@ -68,7 +68,7 @@ func ParseLeader(r io.Reader) (leader *Leader, err error) {
 
 func readLeader(reader io.Reader) (leader *Leader, err error) {
 	data := make([]byte, 24)
-	n, err := reader.Read(data)
+	n, err := io.ReadFull(reader, data)
 	if err != nil {
 		return
 	}
@@ -137,7 +137,7 @@ func readDirEnt(reader io.Reader) (dent *dirent, err error) {
 		err = ErrFieldSeparator
 		return
 	}
-	n, err := reader.Read(data[1:])
+	n, err := io.ReadFull(reader, data[1:])
 	if err != nil {
 		return
 	}

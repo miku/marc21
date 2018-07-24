@@ -34,7 +34,7 @@ func (cf *ControlField) GetTag() string {
 
 func readControl(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
-	n, err := reader.Read(data)
+	n, err := io.ReadFull(reader, data)
 	if err != nil {
 		return
 	}
@@ -121,7 +121,7 @@ func (df *DataField) String() string {
 
 func readData(reader io.Reader, dent *dirent) (field Field, err error) {
 	data := make([]byte, dent.length)
-	n, err := reader.Read(data)
+	n, err := io.ReadFull(reader, data)
 	if err != nil {
 		return
 	}
